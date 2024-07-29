@@ -1,0 +1,24 @@
+Package: CITMIC
+Type: Package
+Title: Estimation of Cell Infiltration Based on Cell Crosstalk
+Version: 0.1.1
+Maintainer: Junwei Han <hanjunwei1981@163.com>
+Authors@R: c(person(given = "Junwei", family = "Han", email = "hanjunwei1981@163.com", role  = c("aut", "cre", "cph")),
+             person(given = "Xilong", family = "Zhao", role  = "aut")
+             )
+Description: A systematic biology tool was developed to identify cell infiltration via Individualized Cell-Cell interaction network. 'CITMIC' first constructed a weighted cell interaction network through integrating Cell-target interaction information, molecular function data from Gene Ontology (GO) database and gene transcriptomic data in specific sample, and then, it used a network propagation algorithm on the network to identify cell infiltration for the sample. Ultimately, cell infiltration in the patient dataset was obtained by normalizing the centrality scores of the cells.
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
+Depends: 
+    R (>= 2.10)
+Imports: 
+    fastmatch,
+    igraph,
+    parallel,
+    stats
+RoxygenNote: 7.2.3
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

@@ -1,0 +1,63 @@
+---
+title: "CITMIC User Guide"
+author: "Xilong Zhao, Junwei Han"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+      toc: yes
+vignette: >
+  %\VignetteIndexEntry{CITMIC User Guide} 
+
+  %\VignetteEncoding{UTF-8} 
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r, include = FALSE}
+library(CITMIC)
+library(parallel)
+```
+
+## Introduce
+
+This vignette illustrates how to easily use the **CITMIC package**. Here, we present a network-based computational approach, **CTMIC**, estimate cell infiltration by integrating gene transcriptomic data and individualized cell interaction network. 
+
+This network-based method major parts:
+
+- - Constructing network and performing randomization. In our method, Here we collected a total of 86 cell types and 4171 GO-BPs. Among them, the gene characterization sets for various cell types came from 12 sources, including published cell signature sets (Bindea et al. [1], Charoentong et al. [2], Danaher et al. [3], Davoli et al. [4], He et al. [5], Rooney et al. [6], Tirosh et al. [7]) and the TME cell estimation methods (MCPcounter [8], EPIC [9], ImmuCellAI [10], TIDE [11] and xCell [12]). The molecular function gene sets were downloaded from C5 Gene sets derived from the GO biological process ontology in the Molecular Signatures Database (MSigDB). We constructed a Cell-GO bipartite network for each sample. We defined an edge between a Cell and a GO term if they have at least a common gene, and give the weight of this edge that is calculated by the Jaccard index and Gene Expression Profile(GEP). Next, we proposed to construct a Cell-Cell interaction network for each sample. The information from the Cell-GO bipartite graph was used to evaluate the extent of interaction between two Cells as the edge's weight. We consider that the extent of interaction between two Cells will be stronger when there are more GO terms they target in common and the more related they are to these GO terms. Then, we used the eigenvector centrality measure to calculate how central each Cell is in this individualized Cell-Cell interaction network. Finally, cell infiltration in the patient dataset was obtained by normalizing the centrality scores of the cells.
+
+    This package provides the `GetData_CITMIC` function to return example data set and environment variables, such as the gene expression matrix and so on.
+    
+------------------------------------------------------------------------
+
+##Example  calculate cell infiltration.
+
+The function `CITMIC` is used to calculate the Cell infiltration(lnScore). This function requires users to input the gene expression matrix,the *weighted* specifies whether to create a weighted graph for the cell-cell interaction network, the *base* for standardized log base of data, the *damping* is the restart probability of random walk and the *cl.cores* is number of CPU cores applied to this task. We recommend using as input the gene expression matrix normalized by log2(fpkm+1). An example data is stored in the package.
+
+The commands are as follows: 
+
+```{r,eval=TRUE}
+#Detect the Number of CPU Cores(Select the number of cl.cores to apply to CITMIC based on detectCores())
+detectCores()
+# Obtain the example data
+GEP<-GetData_CITMIC("GEP")
+# Calculate the Cell infiltration(lnScore)
+lnScore<-CITMIC(GEP,weighted = TRUE,base = 10,damping=0.90,cl.cores=1)
+head(lnScore)
+```
+
+------------------------------------------------------------------------
+
+## Refenrence
+
+[1.	Bindea, G., et al., Spatiotemporal dynamics of intratumoral immune cells reveal the immune landscape in human cancer. Immunity, 2013. 39(4): p. 782-95.](#https://pubmed.ncbi.nlm.nih.gov/24138885/)
+[2.	Charoentong, P., et al., Pan-cancer Immunogenomic Analyses Reveal Genotype-Immunophenotype Relationships and Predictors of Response to Checkpoint Blockade. Cell Rep, 2017. 18(1): p. 248-262.](#https://pubmed.ncbi.nlm.nih.gov/28052254/)
+[3.	Danaher, P., et al., Gene expression markers of Tumor Infiltrating Leukocytes. J Immunother Cancer, 2017. 5: p. 18.](#https://pubmed.ncbi.nlm.nih.gov/28239471/)
+[4.	Davoli, T., et al., Tumor aneuploidy correlates with markers of immune evasion and with reduced response to immunotherapy. Science, 2017. 355(6322).](#https://pubmed.ncbi.nlm.nih.gov/28104840/)
+[5.	He, Y., et al., Classification of triple-negative breast cancers based on Immunogenomic profiling. J Exp Clin Cancer Res, 2018. 37(1): p. 327.](#https://pubmed.ncbi.nlm.nih.gov/30594216/)
+[6.	Rooney, M.S., et al., Molecular and genetic properties of tumors associated with local immune cytolytic activity. Cell, 2015. 160(1-2): p. 48-61.](#https://pubmed.ncbi.nlm.nih.gov/25594174/)
+[7.	Tirosh, I., et al., Dissecting the multicellular ecosystem of metastatic melanoma by single-cell RNA-seq. Science, 2016. 352(6282): p. 189-96.](#https://pubmed.ncbi.nlm.nih.gov/27124452/)
+[8.	Becht, E., et al., Estimating the population abundance of tissue-infiltrating immune and stromal cell populations using gene expression. Genome Biol, 2016. 17(1): p. 218.](#https://pubmed.ncbi.nlm.nih.gov/27765066/)
+[9.	Racle, J., et al., Simultaneous enumeration of cancer and immune cell types from bulk tumor gene expression data. Elife, 2017. 6.](#https://pubmed.ncbi.nlm.nih.gov/29130882/)
+[10.	Miao, Y.R., et al., ImmuCellAI: A Unique Method for Comprehensive T-Cell Subsets Abundance Prediction and its Application in Cancer Immunotherapy. Adv Sci (Weinh), 2020. 7(7): p. 1902880.](#https://pubmed.ncbi.nlm.nih.gov/32274301/)
+[11.	Jiang, P., et al., Signatures of T cell dysfunction and exclusion predict cancer immunotherapy response. Nat Med, 2018. 24(10): p. 1550-1558.](#https://pubmed.ncbi.nlm.nih.gov/30127393/)
+[12.	Aran, D., Z. Hu, and A.J. Butte, xCell: digitally portraying the tissue cellular heterogeneity landscape. Genome Biol, 2017. 18(1): p. 220.](#https://pubmed.ncbi.nlm.nih.gov/29141660/)
