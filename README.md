@@ -13,7 +13,7 @@ CITMIC is a method for estimate cell infiltration score
 
 `CITMIC` can infer the cell infiltration of the TME by simultaneously measuring 86 different cell types, constructing an individualized cell-cell crosstalk network based on functional similarities between cells, and using only gene transcription data. This is a novel approach to estimate the relative cell infiltration levels, and which were shown to be superior to the current methods.
 
-![A simple schema of the CITMIC](man/figures/intro.jpg)
+![A simple schema of the CITMIC](man/figures/info.jpg)
 
 ## A notice on operating system compatibility
 - We recommend using as input the gene expression matrix normalized by log2(fpkm+1).
