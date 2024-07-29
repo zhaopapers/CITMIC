@@ -23,7 +23,7 @@ CITMIC is a method for estimate cell infiltration score
 
 ## Installation
 
-Install `labyrinth` using:
+Install `CITMIC` using:
 
 ``` r
 install.packages(c('devtools', 'BiocManager'))
@@ -33,6 +33,6 @@ remotes::install_github("zhaopapers/CITMIC")
 ## Usage
 
 Load the package using `library(CITMIC)`. We provide a vignette for the package that can be called using: `vignette("CITMIC")`. 
-
+Alternatively, you can view the online version on [CRAN](doc/labyrinth_knit.md), The examples I provided would take several minutes to run on a normal desktop computer. Basically that is all you have to know.
 
 
