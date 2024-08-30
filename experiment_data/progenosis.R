@@ -11,6 +11,7 @@ library(pheatmap)
 library(timeROC)
 library(ggplot2)
 library(glmnet)
+load("go_cell_inter_10_350.Rdata")
 timeRoc<-function(risk,year){
   risk$OS.time<-risk$OS.time/365
   tROC<-timeROC(T=risk$OS.time,marker = risk$RiskScore,
