@@ -75,7 +75,6 @@ write.csv(single_result,"result.csv")
 
 
 #scatter plot
-#dsd
 mcor<-read.csv("compare_cell_SDY67.csv",row.names = 1)
 mcor<-read.csv("compare_cell_SDY144.csv",row.names = 1)
 library(corrplot)
@@ -87,3 +86,12 @@ corrplot(as.matrix(mcor),tl.col = 'black',
          na.label = "-",
          rect.col = 'black',
          rect.lwd = 2)
+
+#bar graph
+colnames(compare_method_prediction)<-c("cell","patient","predict","observed"]
+compare_method_prediction_single<-compare_method_prediction[which(compare_method_prediction$cell=="Activated CD4+ T cells"),]
+ggplot(compare_method_prediction_single, aes(x = predict, y = observed))+geom_point(size = 6, color = "black")+
+  geom_smooth(method = "lm",aes(x =predict , y = observed),
+              se = FALSE,inherit.aes = FALSE,color="#d0648a",linewidth=2)+
+  geom_text(aes(x = -19, y = 0.55,label = "R = 0.591"),size = 6)+
+  geom_text(aes(x = -19, y = 0.57,label = "p = 0.041"),size = 6)
