@@ -95,3 +95,31 @@ ggplot(compare_method_prediction_single, aes(x = predict, y = observed))+geom_po
               se = FALSE,inherit.aes = FALSE,color="#d0648a",linewidth=2)+
   geom_text(aes(x = -19, y = 0.55,label = "R = 0.591"),size = 6)+
   geom_text(aes(x = -19, y = 0.57,label = "p = 0.041"),size = 6)
+
+
+
+  #single cell infiltration
+xiugai<-read.csv("xiugaimap.csv",row.names = 1)
+
+GSE86363_harmonized_annotation133A1[,1]<-factor(GSE86363_harmonized_annotation133A1[,1],
+                                                levels = c(
+  "Activated CD4+ T cells","Activated Memory CD4 T cells","CD4 T cells","White Blood Cells",
+  "CD8 T cells","Memory CD4 T cells","Resting Memory CD4 T cells","T cells","T gamma delta",
+  "NK cells","Th1","Th2","Canonical CD4 Treg cells", "Plasma cells",
+  "B cells","CD40 activated B cells","Germinal center B cells","Memory B cells","Naive B cells",
+  "Resting B cells","post Germinal-center B cells",
+  "Endothelium","Fibroblast",
+   "Monocytes","Neutrophils",
+  "Eosinophils","Mast cell",
+  "Activated Macrophages","Alternatively Activated Macrophages","Macrophages",
+  "Immature Dendritic cells","Mature dendritic cells","Myeloid Dendritic Cells","Plasmacytoid Dendritic Cells"
+  ))
+
+colors <- list(ImmuneScore =c("#d87a80","#0ebeff" ))
+
+
+my_colors <- colorRampPalette(c("#5394cd","white", "#c12e34"))(100)
+
+pheatmap(xiugai[,rownames(GSE86363_harmonized_annotation133A1)[order(GSE86363_harmonized_annotation133A1[,1],decreasing = F)]],
+         show_colnames = F,show_rownames = T,cluster_cols = F,cluster_rows = F,breaks=breaks,color=my_colors,
+         scale="row",annotation_col=GSE86363_harmonized_annotation133A1)
