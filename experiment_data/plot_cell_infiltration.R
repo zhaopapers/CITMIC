@@ -8,4 +8,4 @@ deco_xcell<-deconvolute(GSE52005,"xcell")
 tcga_abis<-deconvolute(GSE52005,"abis")
 lnscore_GSE52005<-lnscore(GSE52005)
 
-load()
+compare_cell_SDY144<-read.csv("compare_cell_SDY144.csv")
