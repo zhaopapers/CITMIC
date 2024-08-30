@@ -1,19 +1,4 @@
-# cell infiltration
-#SDY144 GSE22155
-GSE52005<-read.delim("GSE52005_symbol_aggregate_20000.csv")
-#SDY67 
-SDY67<-read.delim("SDY67_tmp_20000.csv") # select MCPcounter 
-#SDY420 SDY311 from xcell preprocess
-load("sdy311.rds")
-load("sdy420.rds")
-#GSE86363 
-library(data.table)
-GSE86363<-fread("GSE86363_xp133A.txt",sep = "\t")
-GSE86363<-data.frame(GSE86363)
-GPL96<-read.csv("GPL96.csv")
-GPL96<-GPL96[,c("ID","Gene.Symbol")]
-exp_geo_GSE86363<-merge(GPL96,GSE86363,by.x="ID",by.y="V1")
-exp_geo_GSE86363<-exp_geo_GSE86363[,-1]
+#ID transfer function
 ID_Tran_Gene_GEO<-function(a,b){
   probe_gene<-cbind(b[,1],b[,2])
   probe_location<-c()
@@ -62,22 +47,40 @@ ID_Tran_Gene_GEO<-function(a,b){
   
   return(data_geo_exp)
 }
-GSE86363_symbol<-ID_Tran_Gene_GEO(GSE86363,GPL96)
 
+
+
+# cell infiltration
+#SDY144 GSE22155
+GSE52005<-read.delim("GSE52005_symbol_aggregate_20000.csv")
+
+#SDY67 
+SDY67<-read.delim("SDY67_tmp_20000.csv") # Select the SDY67 attempted in MCPcounter
+
+#SDY420 SDY311 from xCell preprocess
+load("sdy311.rds")
+load("sdy420.rds")
+
+#GSE86363 
+library(data.table)
+GSE86363<-fread("GSE86363_xp133A.txt",sep = "\t")
+GSE86363<-data.frame(GSE86363)
+GPL96<-read.csv("GPL96.csv")
+GPL96<-GPL96[,c("ID","Gene.Symbol")]
+exp_geo_GSE86363<-merge(GPL96,GSE86363,by.x="ID",by.y="V1")
+exp_geo_GSE86363<-exp_geo_GSE86363[,-1]
+GSE86363_symbol<-ID_Tran_Gene_GEO(GSE86363,GPL96)
 GSE86363_symbol_1<-apply(GSE86363_symbol,2,as.numeric)
 rownames(GSE86363_symbol_1)<-rownames(GSE86363_symbol)
 GSE86363_symbol_log2<-log2(GSE86363_symbol_1+1)
-
 threshold <- 0.5 * ncol(GSE86363_symbol_log2)
 GSE86363_symbol_log2_20000<-GSE86363_symbol_log2[rowSums(GSE86363_symbol_log2[, -1] == 0) < threshold, ]
 
-
+#TCGA data preprocess
 library(tibble)
 library(clusterProfiler)
-setwd("D:/Users/89800/Desktop/数据整理/")
-#TCGA data preprocess
 exp_fpkm<-read.table("TCGA-SKCM.htseq_fpkm.tsv",header=T) # SKCM
-mapp<-read.table("D://data//Vilon//gencode.v22.annotation.gene.probeMap",header = T)#map
+mapp<-read.table("gencode.v22.annotation.gene.probeMap",header = T)#map
 
 exp_fpkm<-merge(mapp,exp_fpkm,by.x="id",by.y="Ensembl_ID")
 exp_fpkm_tumor<-exp_fpkm[,c("gene",colnames(exp_fpkm)[which(substr(colnames(exp_fpkm),14,14)%in%c("0"))])]
@@ -92,12 +95,11 @@ rownames(exp_fpkm_tumor_aggregate)<-NULL
 exp_fpkm_tumor_aggregate<-column_to_rownames(exp_fpkm_tumor_aggregate,var=colnames(exp_fpkm_tumor_aggregate)[1])
 exp_fpkm_tumor_aggregate_log2<-log2(exp_fpkm_tumor_aggregate+1)
 
-
 threshold <- 0.5 * ncol(exp_fpkm_tumor_aggregate_log2)
 exp_fpkm_tumor_aggregate_log2_20000<-exp_fpkm_tumor_aggregate_log2[rowSums(exp_fpkm_tumor_aggregate_log2[, -1] == 0) < threshold, ]
 
-
-#vailation GSE22155 GSE19234
+#vailation 
+#GSE22155 GSE19234
 GSE22155_GPL6102<-read.delim("vaildation/GSE22155/GSE22155-GPL6102_series_matrix.txt")
 GSE22155_GPL6947<-read.delim("vaildation/GSE22155/GSE22155-GPL6947_series_matrix.txt")
 
@@ -130,8 +132,8 @@ GSE22155_GPL6102_aggregate_20000<-GSE22155_GPL6102_aggregate[rowSums(GSE22155_GP
 threshold <- 0.5 * ncol(GSE22155_GPL6947_aggregate)
 GSE22155_GPL6947_aggregate_20000<-GSE22155_GPL6947_aggregate[rowSums(GSE22155_GPL6947_aggregate == 0) < threshold, ]
 
+#GSE19234
 GPL570<-read.csv("vaildation/GSE19234/GPL570.csv")
-
 GSE19234<-read.delim("vaildation/GSE19234/GSE19234_series_matrix.txt")
 GSE19234_GPL570<-merge(GPL570,GSE19234,by.x="ID",by.y="ID_REF")
 GSE19234_GPL570<-GSE19234_GPL570[,-1]
