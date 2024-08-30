@@ -72,3 +72,18 @@ for(i in comm_cell){
   single_result<-rbind(single_result,cbind(i,re.cor,re.pval))
 }
 write.csv(single_result,"result.csv")
+
+
+#scatter plot
+#dsd
+mcor<-read.csv("compare_cell_SDY67.csv",row.names = 1)
+mcor<-read.csv("compare_cell_SDY144.csv",row.names = 1)
+library(corrplot)
+col3 <- colorRampPalette(c("#2b821d", "white", "#c12e34"))
+corrplot(as.matrix(mcor),tl.col = 'black',
+         method = 'pie', 
+         col = col3(100),
+         addrect = 2,
+         na.label = "-",
+         rect.col = 'black',
+         rect.lwd = 2)
