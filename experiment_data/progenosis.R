@@ -1,3 +1,86 @@
+library(data.table)
+library(tidyr)
+library(NbClust)
+library(GSVA)
+library(kernlab)
+library(survival)
+library(survminer)
+library(clusterProfiler)
+library(igraph)
+library(pheatmap)
+library(timeROC)
+library(ggplot2)
+library(glmnet)
+timeRoc<-function(risk,year){
+  risk$OS.time<-risk$OS.time/365
+  tROC<-timeROC(T=risk$OS.time,marker = risk$RiskScore,
+                delta=risk$OS,
+                cause=1,weighting="marginal",
+                times=c(1:year),
+                iid=TRUE)
+  print(tROC$AUC)
+  
+}
+factor_sing_multi<-function(cell_ssgsea_survival){
+  genes<-colnames(cell_ssgsea_survival)[4:length(colnames(cell_ssgsea_survival))]
+  outTab= data.frame()
+  for(i in genes){
+    expr = cell_ssgsea_survival[,i]
+    cox = coxph(Surv(OS.time,OS) ~ expr,cell_ssgsea_survival)
+    coxsummary = summary(cox)
+    if(coxsummary$coefficients[,"Pr(>|z|)"]<=0.05){
+      outTab=rbind(
+        outTab,cbind(
+          cell=i,
+          
+          coef=coxsummary$coefficients[,"coef"],
+          HR=coxsummary$coefficients[,"exp(coef)"],
+          pvalue=coxsummary$coefficients[,"Pr(>|z|)"]
+        )
+      )
+    }
+    #print(i)
+  }
+
+  cell_ssgsea_survival<-cell_ssgsea_survival[,c("sample","OS","OS.time",outTab[,1])]
+  rownames(cell_ssgsea_survival)<-cell_ssgsea_survival[,1]
+  cell_ssgsea_survival<-cell_ssgsea_survival[,-1]
+  cox = coxph(Surv(OS.time,OS) ~ .,cell_ssgsea_survival)
+  coxsummary = summary(cox)
+  print(coxsummary)
+  cel<-rownames(coxsummary$coefficients)[which(coxsummary$coefficients[,"Pr(>|z|)"]<=0.05)]
+  outTab<-cbind(
+    HR=coxsummary$coefficients[cel,"exp(coef)"],
+    HR.95L=coxsummary$conf.int[cel,"lower .95"],
+    HR.95H=coxsummary$conf.int[cel,"upper .95"],
+    beta=coxsummary$coefficients[cel,"coef"],
+    pvalue=coxsummary$coefficients[cel,"Pr(>|z|)"]
+  )
+  colnames(outTab)<-c("HR","HR.95L","HR.95H","beta","P-value")
+  
+  survival_factor_adjusted<-coxsummary$coefficients[which(coxsummary$coefficients[,5]<=0.05),]
+
+  if(length(survival_factor_adjusted)==5){
+    G<-rownames(coxsummary$coefficients)[which(coxsummary$coefficients[,5]<0.05)]
+    G<-gsub("`","",G)
+    G.exp<-as.matrix(cell_ssgsea_survival[,G])
+    RiskScore<-G.exp*survival_factor_adjusted[1]
+  }else{
+    rownames(survival_factor_adjusted)<-gsub("`","",rownames(survival_factor_adjusted))
+    G.exp<-as.matrix(cell_ssgsea_survival[,rownames(survival_factor_adjusted)])
+
+    RiskScore<-G.exp%*%survival_factor_adjusted[,1]
+  }
+
+
+  riskresult = cbind(patient = rownames(cell_ssgsea_survival),cell_ssgsea_survival[,1:2],G.exp,RiskScore)
+  res.cut <- surv_cutpoint(data.frame(riskresult), time = "OS.time", event = "OS",
+                           variables = c("RiskScore"))
+
+  riskresult$group<-ifelse(riskresult$RiskScore>=res.cut[["cutpoint"]][["cutpoint"]],"high","low")
+  print(res.cut[["cutpoint"]][["cutpoint"]])
+  return(riskresult)
+}
 #All TCGA processes are identical, only TCGA-SKCM is listed here for reference.
 library(CITMIC)
 library(parallel)
