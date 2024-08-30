@@ -12,6 +12,74 @@ library(timeROC)
 library(ggplot2)
 library(glmnet)
 load("go_cell_inter_10_350.Rdata")
+
+
+go_cell_score_row<-function(a,table,del,c){
+      score_row<-rep(0,c)
+
+      for(j in 1:length(a)){
+        if(a[j]!=""){
+          gene<-unlist(strsplit(a[j], split = ","))
+          location<-fastmatch::fmatch(gene, table)
+
+          dell<- na.omit(del[location])
+          de_score1<-median(as.numeric(dell))
+          if (!is.na(de_score1)) {
+            score_row[j]<-de_score1
+          }
+
+        }
+
+      }
+      return(score_row)
+    }
+
+
+    median_inter<-function(matrix_cell_go_inter,matrix_cell_go_jaccard,GEP){
+
+      GEPscore<-cbind(rownames(GEP),GEP[,1])
+      table <- GEPscore[,1]
+      del <- GEPscore[, 2]
+      median_score<-matrix(0,nrow=length(rownames(matrix_cell_go_inter)),ncol=length(colnames(matrix_cell_go_inter)))
+      for(k in 1:length(rownames(matrix_cell_go_inter))){
+
+        Genes_vector<-matrix_cell_go_inter[k,]
+        row<-go_cell_score_row(Genes_vector,table,del,length(colnames(matrix_cell_go_inter)))
+        median_score[k,]<-row
+
+      }
+      matrix_median_genes<-median_score*matrix_cell_go_jaccard
+      colnames(matrix_median_genes)<-colnames(matrix_cell_go_inter)
+      rownames(matrix_median_genes)<-rownames(matrix_cell_go_inter)
+      matrix_cell_score<-t(matrix_median_genes)%*%matrix_median_genes
+      matrix_cell_score[is.na(matrix_cell_score)]<-0
+      diag(matrix_cell_score)<-0
+      return(matrix_cell_score)
+    }
+
+
+matrix_m_m_score<-function(a){
+  matrix_m_m_score<-t(a)%*%a
+  matrix_m_m_score[is.na(matrix_m_m_score)]<-0
+  return(matrix_m_m_score)
+}
+
+
+random_crosstalk<-function(result_cell,damping=damping){
+
+
+
+    adj.final<-as.matrix(result_cell)
+    graph = graph.adjacency(adj.final,mode=c("undirected"),weighted=weighted,add.rownames=T)
+    temp = page.rank(graph, vids=V(graph), directed=FALSE, damping=damping, weights=NULL)
+    rank = temp$vector
+    rank1 = as.matrix(rank)
+
+
+    return(rank1)
+  }
+
+
 timeRoc<-function(risk,year){
   risk$OS.time<-risk$OS.time/365
   tROC<-timeROC(T=risk$OS.time,marker = risk$RiskScore,
@@ -22,6 +90,8 @@ timeRoc<-function(risk,year){
   print(tROC$AUC)
   
 }
+
+
 factor_sing_multi<-function(cell_ssgsea_survival){
   genes<-colnames(cell_ssgsea_survival)[4:length(colnames(cell_ssgsea_survival))]
   outTab= data.frame()
@@ -42,7 +112,6 @@ factor_sing_multi<-function(cell_ssgsea_survival){
     }
     #print(i)
   }
-
   cell_ssgsea_survival<-cell_ssgsea_survival[,c("sample","OS","OS.time",outTab[,1])]
   rownames(cell_ssgsea_survival)<-cell_ssgsea_survival[,1]
   cell_ssgsea_survival<-cell_ssgsea_survival[,-1]
