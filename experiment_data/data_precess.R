@@ -1,9 +1,16 @@
 # cell infiltration
+#SDY144 GSE22155
+GSE52005<-read.delim("GSE52005_symbol_aggregate_20000.csv")
+#SDY67 
+SDY67<-read.delim("SDY67_tmp_20000.csv") # select MCPcounter 
+#SDY420 SDY311 from xcell preprocess
+load("sdy311.rds")
+load("sdy420.rds")
+#GSE86363 
 library(data.table)
 GSE86363<-fread("GSE86363_xp133A.txt",sep = "\t")
 GSE86363<-data.frame(GSE86363)
 GPL96<-read.csv("GPL96.csv")
-
 GPL96<-GPL96[,c("ID","Gene.Symbol")]
 exp_geo_GSE86363<-merge(GPL96,GSE86363,by.x="ID",by.y="V1")
 exp_geo_GSE86363<-exp_geo_GSE86363[,-1]
