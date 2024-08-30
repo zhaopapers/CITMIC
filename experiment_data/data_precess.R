@@ -76,7 +76,8 @@ GSE86363_symbol_log2<-log2(GSE86363_symbol_1+1)
 threshold <- 0.5 * ncol(GSE86363_symbol_log2)
 GSE86363_symbol_log2_20000<-GSE86363_symbol_log2[rowSums(GSE86363_symbol_log2[, -1] == 0) < threshold, ]
 
-#TCGA data preprocess
+#TCGA data preprocess 
+#All TCGA processes are identical, only TCGA-SKCM is listed here for reference.
 library(tibble)
 library(clusterProfiler)
 exp_fpkm<-read.table("TCGA-SKCM.htseq_fpkm.tsv",header=T) # SKCM
