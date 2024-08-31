@@ -99,7 +99,7 @@ ggplot(compare_method_prediction_single, aes(x = predict, y = observed))+geom_po
 
 
   #single cell infiltration
-xiugai<-read.csv("xiugaimap.csv",row.names = 1)
+xiugai<-read.csv("cell_infiltration_GSE86363.csv",row.names = 1)
 
 GSE86363_harmonized_annotation133A1[,1]<-factor(GSE86363_harmonized_annotation133A1[,1],
                                                 levels = c(
