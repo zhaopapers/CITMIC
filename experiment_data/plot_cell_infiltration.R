@@ -99,9 +99,22 @@ ggplot(compare_method_prediction_single, aes(x = predict, y = observed))+geom_po
 
 
   #single cell infiltration
-xiugai<-read.csv("cell_infiltration_GSE86363.csv",row.names = 1)
+cell_infiltration_GSE86363<-read.csv("cell_infiltration_GSE86363.csv",row.names = 1)
+GSE86363_harmonized_annotation133A<-read.delim("GSE86363_harmonized_annotation133A.txt")
+nu_immune<-c("Kidney","Breast","Skin","Lung","Ovary","Large intestine","Central Nervous System",
+  "Prostate","Pre-GC B cells","Ewing's sarcoma","Upper aerodigestive tract","Cervix",
+  "Liver","Osteosarcoma","Soft Tissue Sarcoma","Peripheral Nervous System","Cell_Lines")
+GSE86363_harmonized_annotation133A<-GSE86363_harmonized_annotation133A[-which(GSE86363_harmonized_annotation133A[,4]%in%nu_immune),]
+GSE86363_harmonized_annotation133A<-GSE86363_harmonized_annotation133A[,c(1,4)]
+common<-intersect(GSE86363_harmonized_annotation133A[,1],colnames(cell_infiltration_GSE86363))
+GSE86363_harmonized_annotation133A<-GSE86363_harmonized_annotation133A[which(GSE86363_harmonized_annotation133A[,1]%in%common),]
+                                       
+rownames(GSE86363_harmonized_annotation)<-GSE86363_harmonized_annotation133A[,1]
+GSE86363_harmonized_annotation<-data.frame(GSE86363_harmonized_annotation133A[,-1])
+colnames(GSE86363_harmonized_annotation)<-"group"
 
-GSE86363_harmonized_annotation133A1[,1]<-factor(GSE86363_harmonized_annotation133A1[,1],
+
+GSE86363_harmonized_annotation[,1]<-factor(GSE86363_harmonized_annotation[,1],
                                                 levels = c(
   "Activated CD4+ T cells","Activated Memory CD4 T cells","CD4 T cells","White Blood Cells",
   "CD8 T cells","Memory CD4 T cells","Resting Memory CD4 T cells","T cells","T gamma delta",
@@ -115,11 +128,11 @@ GSE86363_harmonized_annotation133A1[,1]<-factor(GSE86363_harmonized_annotation13
   "Immature Dendritic cells","Mature dendritic cells","Myeloid Dendritic Cells","Plasmacytoid Dendritic Cells"
   ))
 
-colors <- list(ImmuneScore =c("#d87a80","#0ebeff" ))
+
 
 
 my_colors <- colorRampPalette(c("#5394cd","white", "#c12e34"))(100)
 
-pheatmap(xiugai[,rownames(GSE86363_harmonized_annotation133A1)[order(GSE86363_harmonized_annotation133A1[,1],decreasing = F)]],
+pheatmap(cell_infiltration_GSE86363[,rownames(GSE86363_harmonized_annotation)[order(GSE86363_harmonized_annotation[,1],decreasing = F)]],
          show_colnames = F,show_rownames = T,cluster_cols = F,cluster_rows = F,breaks=breaks,color=my_colors,
-         scale="row",annotation_col=GSE86363_harmonized_annotation133A1)
+         scale="row",annotation_col=GSE86363_harmonized_annotation)
