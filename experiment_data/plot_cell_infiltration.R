@@ -129,8 +129,6 @@ GSE86363_harmonized_annotation[,1]<-factor(GSE86363_harmonized_annotation[,1],
   ))
 
 
-
-
 my_colors <- colorRampPalette(c("#5394cd","white", "#c12e34"))(100)
 
 pheatmap(cell_infiltration_GSE86363[,rownames(GSE86363_harmonized_annotation)[order(GSE86363_harmonized_annotation[,1],decreasing = F)]],
