@@ -98,7 +98,7 @@ ggplot(compare_method_prediction_single, aes(x = predict, y = observed))+geom_po
 
 
 
-  #single cell infiltration
+#single cell infiltration
 cell_infiltration_GSE86363<-read.csv("cell_infiltration_GSE86363.csv",row.names = 1)
 GSE86363_harmonized_annotation133A<-read.delim("GSE86363_harmonized_annotation133A.txt")
 nu_immune<-c("Kidney","Breast","Skin","Lung","Ovary","Large intestine","Central Nervous System",
@@ -113,7 +113,6 @@ rownames(GSE86363_harmonized_annotation)<-GSE86363_harmonized_annotation133A[,1]
 GSE86363_harmonized_annotation<-data.frame(GSE86363_harmonized_annotation133A[,-1])
 colnames(GSE86363_harmonized_annotation)<-"group"
 
-
 GSE86363_harmonized_annotation[,1]<-factor(GSE86363_harmonized_annotation[,1],
                                                 levels = c(
   "Activated CD4+ T cells","Activated Memory CD4 T cells","CD4 T cells","White Blood Cells",
@@ -127,7 +126,6 @@ GSE86363_harmonized_annotation[,1]<-factor(GSE86363_harmonized_annotation[,1],
   "Activated Macrophages","Alternatively Activated Macrophages","Macrophages",
   "Immature Dendritic cells","Mature dendritic cells","Myeloid Dendritic Cells","Plasmacytoid Dendritic Cells"
   ))
-
 
 my_colors <- colorRampPalette(c("#5394cd","white", "#c12e34"))(100)
 
