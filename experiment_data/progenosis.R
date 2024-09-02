@@ -155,8 +155,8 @@ factor_sing_multi<-function(cell_ssgsea_survival){
 library(CITMIC)
 library(parallel)
 load(exp_fpkm_tumor_aggregate_log2_20000,file="exp_fpkm_tumor_aggregate_log2_20000.Rdata")
-lnScore<-CITMIC(exp_fpkm_tumor_aggregate_log2_20000,cl.cores = 8)
-lnScore1<-CITMIC(exp_SKCM_fpkm_tumor_aggregate_log2_20000,cl.cores = 8)
+lnScore_SKCM<-CITMIC(exp_fpkm_tumor_aggregate_log2_20000,cl.cores = 8)
+
 #prognosis
 survival<-read.delim("SKCM_survival.txt",header=T,sep = "\t")
 survival<-survival[,c("sample","OS","OS.time")]
@@ -178,7 +178,7 @@ survival<-survival[,c("sample","OS","OS.time")]
 survival<-survival[-which(survival$OS.time==0),]
 
 
-cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(lnScore))),],t(lnScore)[intersect(survival[,1],colnames(lnScore)),])
+cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(lnScore_SKCM))),],t(lnScore_SKCM)[intersect(survival[,1],colnames(lnScore_SKCM)),])
 cell_interact_survival_unI_II<-cell_interact_survival[-which(cell_interact_survival[,1]%in%stage_I_II),]
 
 single_cox_cell_interact<-factor_sing_multi(cell_interact_survival)
