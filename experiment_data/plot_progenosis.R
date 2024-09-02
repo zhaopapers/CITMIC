@@ -44,7 +44,7 @@ factor_s<-function(cell_ssgsea_survival){
 
 
 cell_type<-read.csv("cell.type.csv",header=F,row.names = 1)
-lnScore<-CITMIC(exp_fpkm_tumor_aggregate_log2_20000,cl.cores = 8)
+lnScore_SKCM<-CITMIC(exp_fpkm_tumor_aggregate_log2_20000,cl.cores = 8)
 
 #ssgsea t(scale(t(exp_SKCM_fpkm_tumor_aggregate_log2_20000)))
 library(GSVA) 
@@ -83,7 +83,7 @@ library(xCell)
 SKCM_xcell <-xCellAnalysis(exp_fpkm_tumor_aggregate_log2_20000)
 SKCM_xcell<-SKCM_xcell[1:64,]
 
-cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(lnScore))),],t(lnScore)[intersect(survival[,1],colnames(lnScore)),])
+cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(lnScore_SKCM))),],t(lnScore_SKCM)[intersect(survival[,1],colnames(lnScore_SKCM)),])
 single_cox_cell_CITMIC<-factor_s(cell_interact_survival)
 write.csv(single_cox_cell_CITMIC,"single_cox_cell_CITMIC.csv")
 
