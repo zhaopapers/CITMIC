@@ -216,7 +216,7 @@ plot(tROC,time=5,col='green',add=T)
 plot(tROC,time=7,col='yellow',add=T)
 plot(tROC,time=9,col='blue',add=T)
 legend(0.6,0.3,c(paste("AUC of 1 Year =",round(tROC$AUC,3)[1]),
-                 paste("AUC of 3 Year =",round(tROC$AUC,3)[2]),#roundС����???3λ
+                 paste("AUC of 3 Year =",round(tROC$AUC,3)[2]),#
                  paste("AUC of 5 Year =",round(tROC$AUC,3)[3]),
                  paste("AUC of 7 Year =",round(tROC$AUC,3)[4]),
                  paste("AUC of 9 Year =",round(tROC$AUC,3)[5])),
