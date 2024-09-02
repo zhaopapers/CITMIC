@@ -1,5 +1,5 @@
 #Scatter plot 
-rownames(single_cox_cell_ssgsea)<-single_cox_cell_ssgsea[,1]
+rownames(single_cox_cell)<-single_cox_cell[,1]
 single_cox_cell_ssgsea<-single_cox_cell_ssgsea[,-1]
 apply(single_cox_cell_ssgsea,2,as.numeric)
 bubble2<-apply(single_cox_cell_ssgsea,2,as.numeric)
