@@ -99,6 +99,8 @@ ggplot(compare_method_prediction_single, aes(x = predict, y = observed))+geom_po
 
 
 #single cell infiltration
+lnScore_GSE86363<-CITMIC(GSE86363_symbol_log2_20000,cl.cores = 8)
+write.csv(lnScore_GSE86363,"cell_infiltration_GSE86363.csv")
 cell_infiltration_GSE86363<-read.csv("cell_infiltration_GSE86363.csv",row.names = 1)
 GSE86363_harmonized_annotation133A<-read.delim("GSE86363_harmonized_annotation133A.txt")
 nu_immune<-c("Kidney","Breast","Skin","Lung","Ovary","Large intestine","Central Nervous System",
