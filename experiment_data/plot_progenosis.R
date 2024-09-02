@@ -19,8 +19,6 @@ bubble2<-cbind(bubble2,cell_type[rownames(bubble2),])
 colnames(bubble2)<-c("cell","HR","P","method","type")
  
 
-
-
 rownames(single_cox_cell_interact)<-single_cox_cell_interact[,1]
 single_cox_cell_interact<-single_cox_cell_interact[,-1]
 apply(single_cox_cell_interact,2,as.numeric)
@@ -206,8 +204,6 @@ PlotScatter<-function(single_cox_cell_interact_late,
     label.args = list(gp = grid::gpar(font = 2, cex =1.5,
                                       family="sans"))
   )
-  
-  
   
 }
 
