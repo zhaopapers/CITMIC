@@ -1,17 +1,14 @@
 #correlation pheatmap
+
 cell_inter<-data.frame(matrix(0,nrow=86,ncol=86))
 colnames(cell_inter)<-rownames(Inscore_SKCM)
 rownames(cell_inter)<-rownames(Inscore_SKCM)
 
 
-library(corrgram)
-library(corrplot)
-
-corrplot(t(network_cell_score), order = "hclust")
 result<-c()
 for(i in 1:86){
   for(j in 1:86){
-    cor<-cor.test(network_cell_score[i,],network_cell_score[j,],method="pearson")
+    cor<-cor.test(Inscore_SKCM[i,],Inscore_SKCM[j,],method="pearson")
     if(cor[["p.value"]]<0.05){
       cell_inter[i,j]<-cor[["estimate"]][["cor"]]
       
