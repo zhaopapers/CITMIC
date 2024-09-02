@@ -1,71 +1,4 @@
 #single cox bubble
-cell_type<-read.csv("cell.type.csv",header=F,row.names = 1)
-lnScore<-CITMIC(exp_SKCM_fpkm_tumor_aggregate_log2_20000,cl.cores = 8)
-cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(lnScore))),],t(lnScore)[intersect(survival[,1],colnames(lnScore)),])
-single_cox_cell<-factor_s(cell_interact_survival)
-write.csv(single_cox_cell,"single_cox_cell_CITMIC.csv")
-
-#ssgsea t(scale(t(exp_SKCM_fpkm_tumor_aggregate_log2_20000)))
-library(GSVA) 
-SKCM_ssGSEA<-gsva(as.matrix(t(scale(t(exp_SKCM_fpkm_tumor_aggregate_log2_20000)))),TMEcell_list,method="ssgsea",kcdf="Gaussian")
-
-#cibersort  exp_fpkm_tumor_aggregate_20000
-SKCM_cibersort<-my_CIBERSORT(exp_fpkm_tumor_aggregate_20000,lm22, perm=100, QN=TRUE, cores = 3)
-SKCM_cibersort<-SKCM_cibersort$proportions
-SKCM_cibersort<-t(SKCM_cibersort)
-SKCM_cibersort<-SKCM_cibersort[1:22,]
-write.csv(exp_fpkm_tumor_aggregate_20000,"exp_fpkm_tumor_aggregate_20000.csv")
-#quanTIseq
-library(immunedeconv)
-SKCM_quantiseq<-deconvolute(as.matrix(exp_fpkm_tumor_aggregate_20000),"quantiseq")
-SKCM_quantiseq<-data.frame(SKCM_quantiseq)
-rownames(SKCM_quantiseq)<-SKCM_quantiseq[,1]
-SKCM_quantiseq<-SKCM_quantiseq[,-1]
-
-#MCPcounter
-library(MCPcounter)
-SKCM_MCPcounter<-MCPcounter.estimate(exp_fpkm_tumor_aggregate_20000,featuresType=c("affy133P2_probesets","HUGO_symbols","ENTREZ_ID","ENSEMBL_ID")[2],
-                                    probesets=read.table("probesets.txt",sep="\t",stringsAsFactors=FALSE,colClasses="character"),
-                                    genes=read.table("genes.txt",sep="\t",stringsAsFactors=FALSE,header=TRUE,colClasses="character",check.names=FALSE)
-                                    
-)
-#EPIC exp_fpkm_tumor_aggregate_20000
-library(EPIC)
-SKCM_EPIC<-deconvolute(exp_fpkm_tumor_aggregate_20000,"epic")
-SKCM_EPIC<-data.frame(SKCM_EPIC)
-rownames(SKCM_EPIC)<-SKCM_EPIC[,1]
-SKCM_EPIC<-SKCM_EPIC[,-1]
-
-
-#xCell   exp_SKCM_fpkm_tumor_aggregate_log2_20000
-library(xCell)
-SKCM_xcell <-xCellAnalysis(exp_fpkm_tumor_aggregate_log2_20000)
-SKCM_xcell<-SKCM_xcell[1:64,]
-
-cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(SKCM_ssGSEA))),],t(SKCM_ssGSEA)[intersect(survival[,1],colnames(SKCM_ssGSEA)),])
-single_cox_cell_ssGSEA<-factor_s(cell_interact_survival)
-write.csv(single_cox_cell_ssGSEA,"single_cox_cell_ssGSEA.csv")
-
-cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(SKCM_xcell))),],t(SKCM_xcell)[intersect(survival[,1],colnames(SKCM_xcell)),])
-single_cox_cell_xcell<-factor_s(cell_interact_survival)
-write.csv(single_cox_cell_xcell,"single_cox_cell_xcell.csv")
-
-cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(tcga_epic))),],t(tcga_epic)[intersect(survival[,1],colnames(tcga_epic)),])
-single_cox_cell_EPIC<-factor_s(cell_interact_survival)
-write.csv(single_cox_cell_EPIC,"single_cox_cell_EPIC.csv")
-
-cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(SKCM_MCPcounter))),],t(SKCM_MCPcounter)[intersect(survival[,1],colnames(SKCM_MCPcounter)),])
-single_cox_cell_MCPcounter<-factor_s(cell_interact_survival)
-write.csv(single_cox_cell_MCPcounter,"single_cox_cell_MCPcounter.csv")
-
-cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(SKCM_cibersort))),],t(SKCM_cibersort)[intersect(survival[,1],colnames(SKCM_cibersort)),])
-single_cox_cell_cibersort<-factor_s(cell_interact_survival)
-write.csv(single_cox_cell_cibersort,"single_cox_cell_cibersort.csv")
-
-cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(SKCM_quantiseq))),],t(SKCM_quantiseq)[intersect(survival[,1],colnames(SKCM_quantiseq)),])
-single_cox_cell_quantiseq<-factor_s(cell_interact_survival)
-write.csv(single_cox_cell_quantiseq,"single_cox_cell_quantiseq.csv")
-
 factor_s<-function(cell_ssgsea_survival){
   cell_ssgsea<-cell_ssgsea_survival[4:length(colnames(cell_ssgsea_survival))]
   gene<-apply(cell_ssgsea,2,function(x){
@@ -110,10 +43,77 @@ factor_s<-function(cell_ssgsea_survival){
 }
 
 
+cell_type<-read.csv("cell.type.csv",header=F,row.names = 1)
+lnScore<-CITMIC(exp_fpkm_tumor_aggregate_log2_20000,cl.cores = 8)
+
+#ssgsea t(scale(t(exp_SKCM_fpkm_tumor_aggregate_log2_20000)))
+library(GSVA) 
+SKCM_ssGSEA<-gsva(as.matrix(t(scale(t(exp_fpkm_tumor_aggregate_log2_20000)))),TMEcell_list,method="ssgsea",kcdf="Gaussian")
+
+#cibersort  exp_fpkm_tumor_aggregate_20000
+SKCM_cibersort<-my_CIBERSORT(exp_fpkm_tumor_aggregate_20000,lm22, perm=100, QN=TRUE, cores = 3)
+SKCM_cibersort<-SKCM_cibersort$proportions
+SKCM_cibersort<-t(SKCM_cibersort)
+SKCM_cibersort<-SKCM_cibersort[1:22,]
+
+#quanTIseq
+library(immunedeconv)
+SKCM_quantiseq<-deconvolute(as.matrix(exp_fpkm_tumor_aggregate_20000),"quantiseq")
+SKCM_quantiseq<-data.frame(SKCM_quantiseq)
+rownames(SKCM_quantiseq)<-SKCM_quantiseq[,1]
+SKCM_quantiseq<-SKCM_quantiseq[,-1]
+
+#MCPcounter
+library(MCPcounter)
+SKCM_MCPcounter<-MCPcounter.estimate(exp_fpkm_tumor_aggregate_20000,featuresType=c("affy133P2_probesets","HUGO_symbols","ENTREZ_ID","ENSEMBL_ID")[2],
+                                    probesets=read.table("probesets.txt",sep="\t",stringsAsFactors=FALSE,colClasses="character"),
+                                    genes=read.table("genes.txt",sep="\t",stringsAsFactors=FALSE,header=TRUE,colClasses="character",check.names=FALSE)
+                                    
+)
+
+#EPIC exp_fpkm_tumor_aggregate_20000
+library(EPIC)
+SKCM_EPIC<-deconvolute(exp_fpkm_tumor_aggregate_20000,"epic")
+SKCM_EPIC<-data.frame(SKCM_EPIC)
+rownames(SKCM_EPIC)<-SKCM_EPIC[,1]
+SKCM_EPIC<-SKCM_EPIC[,-1]
+
+#xCell   exp_SKCM_fpkm_tumor_aggregate_log2_20000
+library(xCell)
+SKCM_xcell <-xCellAnalysis(exp_fpkm_tumor_aggregate_log2_20000)
+SKCM_xcell<-SKCM_xcell[1:64,]
+
+cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(lnScore))),],t(lnScore)[intersect(survival[,1],colnames(lnScore)),])
+single_cox_cell_CITMIC<-factor_s(cell_interact_survival)
+write.csv(single_cox_cell_CITMIC,"single_cox_cell_CITMIC.csv")
+
+cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(SKCM_ssGSEA))),],t(SKCM_ssGSEA)[intersect(survival[,1],colnames(SKCM_ssGSEA)),])
+single_cox_cell_ssGSEA<-factor_s(cell_interact_survival)
+write.csv(single_cox_cell_ssGSEA,"single_cox_cell_ssGSEA.csv")
+
+cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(SKCM_xcell))),],t(SKCM_xcell)[intersect(survival[,1],colnames(SKCM_xcell)),])
+single_cox_cell_xcell<-factor_s(cell_interact_survival)
+write.csv(single_cox_cell_xcell,"single_cox_cell_xcell.csv")
+
+cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(tcga_epic))),],t(tcga_epic)[intersect(survival[,1],colnames(tcga_epic)),])
+single_cox_cell_EPIC<-factor_s(cell_interact_survival)
+write.csv(single_cox_cell_EPIC,"single_cox_cell_EPIC.csv")
+
+cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(SKCM_MCPcounter))),],t(SKCM_MCPcounter)[intersect(survival[,1],colnames(SKCM_MCPcounter)),])
+single_cox_cell_MCPcounter<-factor_s(cell_interact_survival)
+write.csv(single_cox_cell_MCPcounter,"single_cox_cell_MCPcounter.csv")
+
+cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(SKCM_cibersort))),],t(SKCM_cibersort)[intersect(survival[,1],colnames(SKCM_cibersort)),])
+single_cox_cell_cibersort<-factor_s(cell_interact_survival)
+write.csv(single_cox_cell_cibersort,"single_cox_cell_cibersort.csv")
+
+cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(SKCM_quantiseq))),],t(SKCM_quantiseq)[intersect(survival[,1],colnames(SKCM_quantiseq)),])
+single_cox_cell_quantiseq<-factor_s(cell_interact_survival)
+write.csv(single_cox_cell_quantiseq,"single_cox_cell_quantiseq.csv")
+
 
 rownames(single_cox_cell_ssGSEA)<-single_cox_cell_ssGSEA[,1]
 single_cox_cell_ssGSEA<-single_cox_cell_ssGSEA[,-1]
-
 bubble<-apply(single_cox_cell_ssGSEA,2,as.numeric)
 rownames(bubble)<-rownames(single_cox_cell_ssGSEA)
 bubble<-data.frame(bubble)
@@ -124,72 +124,34 @@ bubble[which(bubble$pvalue<0.001),2]<-3
 bubble[which(bubble$coef>0),1]<-1
 bubble[which(bubble$coef<0),1]<-0
 bubble<-bubble[,-3]
-bubble<-cbind(bubble,"ssGSEA")
+bubble<-cbind(bubble,"CITMIC")
 bubble<-cbind(rownames(bubble),bubble)
 
 bubble<-cbind(bubble,cell_type[rownames(bubble),])
 colnames(bubble)<-c("cell","HR","P","method","type")
 
-write.csv(bubble,"bubble_ssGSEA.csv")
+write.csv(bubble,"bubble_CITMIC.csv")
+
+#Integration different methods for the same cell type
+Dotpot<-read.csv("cell_interact_Lymphoids_cell.csv")
+Dotpot[,3]<-as.factor(Dotpot[,3])
+Dotpot[,2]<-as.factor(Dotpot[,2])
 
 
-#Scatter plot 
-rownames(single_cox_cell)<-single_cox_cell[,1]
-single_cox_cell_ssgsea<-single_cox_cell_ssgsea[,-1]
-apply(single_cox_cell_ssgsea,2,as.numeric)
-bubble2<-apply(single_cox_cell_ssgsea,2,as.numeric)
-rownames(bubble2)<-rownames(single_cox_cell_ssgsea)
-bubble2<-data.frame(bubble2)
-bubble2[which(bubble2$pvalue>0.05),2]<-0
-bubble2[which(bubble2$pvalue<0.05&bubble2$pvalue>0.01),2]<-1
-bubble2[which(bubble2$pvalue<0.01&bubble2$pvalue>0.001),2]<-2
-bubble2[which(bubble2$pvalue<0.001),2]<-3
-bubble2[which(bubble2$coef>0),1]<-1
-bubble2[which(bubble2$coef<0),1]<-0
-bubble2<-bubble2[,-3]
-bubble2<-cbind(bubble2,"ssgsea")
-bubble2<-cbind(rownames(bubble2),bubble2)
-
-bubble2<-cbind(bubble2,cell_type[rownames(bubble2),])
-colnames(bubble2)<-c("cell","HR","P","method","type")
- 
-
-rownames(single_cox_cell_interact)<-single_cox_cell_interact[,1]
-single_cox_cell_interact<-single_cox_cell_interact[,-1]
-apply(single_cox_cell_interact,2,as.numeric)
-bubble1<-apply(single_cox_cell_interact,2,as.numeric)
-rownames(bubble1)<-rownames(single_cox_cell_interact)
-bubble1<-data.frame(bubble1)
-bubble1[which(bubble1$pvalue>0.05),2]<-0
-bubble1[which(bubble1$pvalue<0.05&bubble1$pvalue>0.01),2]<-1
-bubble1[which(bubble1$pvalue<0.01&bubble1$pvalue>0.001),2]<-2
-bubble1[which(bubble1$pvalue<0.001),2]<-3
-bubble1[which(bubble1$coef>0),1]<-1
-bubble1[which(bubble1$coef<0),1]<-0
-bubble1<-bubble1[,-3]
-colnames(bubble1)[2]<-"Pval"
-bubble1<-cbind(bubble1,"intetact_score")
-bubble1<-cbind(rownames(bubble1),bubble1)
-
-bubble1<-cbind(bubble1,cell_type[rownames(bubble1),])
-colnames(bubble1)<-c("cell","HR","P","method","type")
-write.csv(bubble1,"bubble1.csv")
-write.csv(bubble2,"bubble2.csv")
-bubble<-rbind(bubble1,bubble2)
-bubble<-read.csv("bubble.csv")
-
-p_cor <-ggplot(bubble[which(bubble$type%in%"others"),], aes(cell,method)) 
-
-p_others<-p_cor + theme(axis.text.x = element_text(vjust = 0.6, hjust = 0.6, angle = 90),
-                         axis.title.y = element_blank(),
-                         axis.text.y=element_blank(),
-                         legend.position="none")+
+p_Lymphoids_cell<-ggplot(Dotpot, aes(cell,method))  + scale_fill_gradient2(low = "#FFFFFF",mid = "#FFFFFF",high = "#FFFFFF",na.value ="#FFFFFF", midpoint = 6 ) +
+  theme(axis.text.x = element_text(vjust = 0.6, hjust = 0.6, angle = 90))+
   coord_fixed(ratio=1)+
-  geom_point(aes(size=P,color=factor(HR),shape=factor(P)), stroke = 1)+
-  scale_size(range = c(0,3))+ scale_color_manual(values = c("1" = "#c12e34", "0" = "#0098d9"))+
-  scale_shape_manual(values=c("0"=4, "1"=16, "2"=16,"3"=16))
-library(patchwork)
-p_Lymphoids/(p_Myeloids+p_stem+p_stromal)
+  geom_point(aes(size=P,shape=P,color=HR))+
+  scale_color_manual(values = c("1" = "#d0648a", "0" = "#4ea397"))+
+  scale_shape_manual(values = c("0" = 4, "1" = 16,"2" = 16, "3" = 16))+
+  scale_size_manual(values = c("0" = 6,"1" = 4, "2" = 6, "3" = 8))+  
+  theme(legend.position="none")  
+
+p_Lymphoids_cell/(p_Myeloids_cell+p_Stem_cell+p_Stromal_cell+ plot_layout(widths = c(14,11,10)))/(p_Others_cell+plot_spacer()+ plot_layout(widths = c(9,26)))
+
+
+
+
 
 
 single_cox_cell_interact_late[,3]<-single_cox_cell_interact_late[,3]/30
@@ -208,6 +170,7 @@ ggsurvplot(kmfit, data=riskresult,
            palette=c("#ef6d6d","#5470c6")
            
 )
+
 PlotScatter(riskresult,cutoff.point=res.cut[["cutpoint"]][["cutpoint"]])
 colnames(single_cox_cell_interact_late)[2:3]<-c("status","time")
 PlotScatter<-function(single_cox_cell_interact_late,
@@ -358,6 +321,9 @@ legend(0.6,0.3,c(paste("AUC of 1 Year =",round(tROC$AUC,3)[1]),
                  
        x.intersp=0.6, y.intersp=1.0,
        lty= 1 ,lwd= 2,col=c('orange',"red","green","yellow","blue"),
-       bty = "n",# bty������???
+       bty = "n",
        seg.len=1,cex=0.9)# 
+
+
+
 
