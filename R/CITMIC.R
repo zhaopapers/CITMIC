@@ -35,7 +35,7 @@
 CITMIC<-function(GEP,weighted = TRUE,base = 10,damping=0.90,cl.cores=1){
 
   cl<-makeCluster(cl.cores)
-  clusterExport(cl,varlist = "GEP")
+  clusterExport(cl,varlist = "GEP",envir = environment())
   clusterEvalQ(cl, {
     matrix_cell_go_inter<- CITMIC::GetData_CITMIC("matrix_cell_go_inter")
     matrix_cell_go_jaccard<-CITMIC::GetData_CITMIC("matrix_cell_go_jaccard")
