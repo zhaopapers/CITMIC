@@ -92,7 +92,6 @@ library(patchwork)
 
  
 #BRCA
-#加TP53突变 PD-L1突变
 library(TCGAbiolinks)
 query<-GDCquery(
   project = "TCGA-BRCA",
@@ -117,27 +116,48 @@ query<-GDCquery(
 GDCdownload(query)
 GDCprepare(query, save=T, save.filename="TCGA-BRCA_SNP.Rdata")
  
+library(CITMIC)
+library(parallel)
 load("BRCA_exp.Rdata")
 lnScore_BRCA<-CITMIC(BRCA_exp,cl.core=8)
-single_cox
+survival<-read.delim("BRCA_survival.txt",header=T,sep = "\t")
+survival<-survival[,c("sample","OS","OS.time")]
+survival<-survival[which(survival$OS.time!=""),]
+survival$sample<-paste0(survival$sample,"A")
+survival$sample<-gsub("-",".",survival$sample)
+
+stage<-read.delim("TCGA.BRCA.sampleMap_BRCA_clinicalMatrix",header=T)
+stage<-stage[,c("sampleID","pathologic_stage")]
+stage<-stage[which(stage$pathologic_stage!=""),]
+stage$sampleID<-paste0(stage$sampleID,"A")
+stage$sampleID<-gsub("-",".",stage$sampleID)
+
+var_stage_early<-c('Stage IA',"Stage I","Stage IIA","Stage IIC","Stage IIB","I/II NOS","Stage IB","Stage 0","Stage II")
+stage_I_II<-stage[which(stage$pathologic_stage%in%var_stage_early),1]
+
+survival<-merge(survival,stage,by.x='sample',by.y='sampleID')
+survival<-survival[,c("sample","OS","OS.time")]
+survival<-survival[-which(survival$OS.time==0),]
+
+
+cell_interact_survival<-cbind(survival[which(survival[,1]%in%intersect(survival[,1],colnames(lnScore_BRCA))),],t(lnScore_BRCA)[intersect(survival[,1],colnames(lnScore_BRCA)),])
+cell_interact_survival_unI_II<-cell_interact_survival[-which(cell_interact_survival[,1]%in%stage_I_II),]
+
+single_cox_cell_interact_late<-factor_sing_multi(cell_interact_survival_unI_II)
+ 
 single_cox_cell_interact_late<-single_cox_cell_interact_late[,c(1,5)]
-LIHC.BQ<-single_cox_cell_interact_late
+BRCA.BQ<-single_cox_cell_interact_late
 library(maftools)
 load("D:/Users/89800/Desktop/CellRankScore/TCGA-BRCA_SNP.Rdata")
-maf.KIRP<-data
-maf<-read.maf(maf.KIRP)
+maf.BRCA<-data
+maf<-read.maf(maf.BRCA)
 data<-maf@data
-PIK3CA_mut<-data.frame(data[which(data[,1]=="PIK3CA"),])
-
+PIK3CA_mut<-data.frame(data[which(data[,1]=="TP53"),])
 PIK3CA_mut_sam<-substr(PIK3CA_mut[,16],1,16)
 PIK3CA_mut_sam<-gsub("-",".",PIK3CA_mut_sam)
 
-READ.TB[which(rownames(READ.TB)%in%PIK3CA_mut_sam),6]<-"mutant"
-READ.TB[-which(rownames(READ.TB)%in%PIK3CA_mut_sam),6]<-"wt"
-
-LUAD.TB<-TB
-READ.TB<-single_cox_cell_interact_late[,c(1,5)]
-TB
+BRCA.BQ[which(rownames(BRCA.BQ)%in%PIK3CA_mut_sam),6]<-"mutant"
+BRCA.BQ[-which(rownames(BRCA.BQ)%in%PIK3CA_mut_sam),6]<-"wt"
 
 CTNNB1_mut<-data.frame(data[which(data[,2]=="CTNNB1"),])
 
