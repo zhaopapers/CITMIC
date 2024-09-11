@@ -314,16 +314,42 @@ plot(tROC,time=5,col='green',add=T)
 plot(tROC,time=7,col='yellow',add=T)
 plot(tROC,time=9,col='blue',add=T)
 legend(0.6,0.3,c(paste("AUC of 1 Year =",round(tROC$AUC,3)[1]),
-                 paste("AUC of 3 Year =",round(tROC$AUC,3)[2]),#
-                 paste("AUC of 5 Year =",round(tROC$AUC,3)[3]),
-                 paste("AUC of 7 Year =",round(tROC$AUC,3)[4]),
-                 paste("AUC of 9 Year =",round(tROC$AUC,3)[5])),
+                 paste("AUC of 3 Year =",round(tROC$AUC,3)[3]),#
+                 paste("AUC of 5 Year =",round(tROC$AUC,3)[5]),
+                 paste("AUC of 7 Year =",round(tROC$AUC,3)[7]),
+                 paste("AUC of 9 Year =",round(tROC$AUC,3)[9])),
                  
        x.intersp=0.6, y.intersp=1.0,
        lty= 1 ,lwd= 2,col=c('orange',"red","green","yellow","blue"),
        bty = "n",
        seg.len=1,cex=0.9)# 
 
+cells<-c("Platelets","Erythrocytes","MSCs","Endothelial cells","Fibroblasts","LECs","Muscle cell",
+  "mv Endothelial cells","Preadipocytes","Smooth muscle cell")
+result<-list()
+
+for(i in cells){
+  cell_sin<-cell_interact_survival[,c("OS","OS.time",i)]
+  group<-ifelse(cell_sin[,i]>=median(cell_sin[,i]),"high","low")
+  cell_sin_sur<-cbind(cell_sin,group)
+  colnames(cell_sin_sur)<-c("OS","OS.time","score","group")
+  cell_sin_sur$OS.time=cell_sin_sur$OS.time/30
+  cell_sin_sur<-list(cell_sin_sur)
+  result<-c(result,cell_sin_sur)
+}
+names(result)<-cells
+
+splots <- lapply(names(result), function(g){
+  i = which(names(result) == g)
+  test<-as.data.frame(result[i])
+  colnames(test)<-c("OS","OS.time","score","group")
+  sfit1<-survfit(Surv(OS.time,OS)~group,data=test)
+  p = survminer::ggsurvplot(sfit1, pval = TRUE, palette = c("red","darkblue"),
+                            data = test, legend = c(0.8, 0.8), title = names(result)[[i]])
+  p2 = p$plot + theme(plot.title = element_text(hjust = 0.5))
+  return(p2)
+})
+patchwork::wrap_plots(splots)+patchwork::plot_layout(guides = "collect",nrow=2)
 
 
 
