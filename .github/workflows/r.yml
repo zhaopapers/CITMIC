@@ -36,6 +36,7 @@ jobs:
           pandoc-version: '3.1.11'
       - name: Setup TinyTex
         uses: r-lib/actions/setup-tinytex@v2
+      - name: Install additional LaTeX packages
         run: |
           tlmgr update --self
           tlmgr install titlesec
