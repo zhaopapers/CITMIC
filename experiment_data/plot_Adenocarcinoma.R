@@ -88,7 +88,7 @@ p4 <- ggplot(test_data_STAD) +
   ggtitle("STAD")
 
 library(patchwork)
-(p1+p2/(p3+p4)
+(p1+p2)/(p3+p4)
 
  
 #BRCA
@@ -119,7 +119,7 @@ GDCprepare(query, save=T, save.filename="TCGA-BRCA_SNP.Rdata")
 library(CITMIC)
 library(parallel)
 load("BRCA_exp.Rdata")#BRCA exp Standardized methodology consistent with SKCM
-lnScore_BRCA<-CITMIC(BRCA_exp,cl.core=8)
+lnScore_BRCA<-CITMIC(BRCA_exp,cl.cores=8)
 survival<-read.delim("BRCA_survival.txt",header=T,sep = "\t")
 survival<-survival[,c("sample","OS","OS.time")]
 survival<-survival[which(survival$OS.time!=""),]
