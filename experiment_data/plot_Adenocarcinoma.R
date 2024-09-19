@@ -162,43 +162,23 @@ BRCA.BQ[-which(rownames(BRCA.BQ)%in%PIK3CA_mut_sam),6]<-"wt"
 
 
 
-#STAD
-maf.BRCA<-data
-maf<-read.maf(maf.BRCA)
-data<-maf@data
-PIK3CA_mut<-data.frame(data[which(data[,2]=="PIK3CA"),])
-PIK3CA_mut_sam<-substr(PIK3CA_mut[,17],1,16)
-PIK3CA_mut_sam<-gsub("-",".",PIK3CA_mut_sam)
-
-STAD.BQ[which(rownames(STAD.BQ2)%in%PIK3CA_mut_sam),10]<-"mutant"
-STAD.BQ[-which(rownames(STAD.BQ2)%in%PIK3CA_mut_sam),10]<-"wt"
-
-TP53_mut<-data.frame(data[which(data[,2]=="TP53"),])
-TP53_mut_sam<-substr(TP53_mut[,17],1,16)
-TP53_mut_sam<-gsub("-",".",TP53_mut_sam)
-
-STAD.BQ[which(rownames(STAD.BQ2)%in%TP53_mut_sam),11]<-"mutant"
-STAD.BQ[-which(rownames(STAD.BQ2)%in%TP53_mut_sam),11]<-"wt"
-
-
-
 library(estimate)
-single_cox_cell_interact_late[,1]
-write.table(exp_BRCA_fpkm_tumor_aggregate_log2_20000,file="READ_exp.txt",quote=F,sep="\t")
-filterCommonGenes(input.f="D:/Users/89800/Desktop/CellRankScore/READ_exp.txt", output.f="READ_exp.gct", id="GeneSymbol")
-estimateScore("READ_exp.gct", "READ_exp_estimate_score.gct", platform="illumina")
+
+write.table(exp_BRCA_fpkm_tumor_aggregate_log2_20000,file="BRCA_exp.txt",quote=F,sep="\t")
+filterCommonGenes(input.f="D:/Users/89800/Desktop/CellRankScore/BRCA_exp.txt", output.f="BRCA_exp.gct", id="GeneSymbol")
+estimateScore("BRCA_exp.gct", "BRCA_exp_estimate_score.gct", platform="illumina")
 BRCA_score<-read.delim("D:/Users/89800/Desktop/CellRankScore/BRCA_exp_estimate_score.gct",fill=TRUE)
 
 #stem score 
 library(xlsx)
-TCGA_score_Stemness<-read.xlsx("/TCGA_score.xlsx",sheetIndex  =1)
-TCGA_score_Stemness<-TCGA_score_Stemness[which(TCGA_score_Stemness[,2]=="READ"),c(1,4)]
+TCGA_score_Stemness<-read.xlsx("TCGA_score.xlsx",sheetIndex  =1)
+TCGA_score_Stemness<-TCGA_score_Stemness[which(TCGA_score_Stemness[,2]=="BRCA"),c(1,4)]
 TCGA_score_Stemness[,1]<-substr(TCGA_score_Stemness[,1],1,16)
 TCGA_score_Stemness[,1]<-gsub("-",".",TCGA_score_Stemness[,1])
 rownames(TCGA_score_Stemness)<-TCGA_score_Stemness[,1]
 rownames(TCGA_score_Stemness)<-substr(rownames(TCGA_score_Stemness),0,12)
 
-STAD.BQ<-cbind(STAD.BQ,stemness_Score=TCGA_score_Stemness[rownames(STAD.BQ),2])
+BRCA.BQ<-cbind(BRCA.BQ,stemness_Score=TCGA_score_Stemness[rownames(BRCA.BQ),2])
 sample<-intersect(TCGA_score_Stemness[,1],single_cox_cell_interact_late[,1])
 
 TCGA_score_Stemness1<-TCGA_score_Stemness[which(TCGA_score_Stemness[,1]%in%sample),]
