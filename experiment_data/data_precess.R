@@ -30,7 +30,7 @@ ID_Tran_Gene_GEO<-function(a,b){
       genes<-matrix[1,2]
       y= matrix[,3:dim(data_geo_exp)[2]]
       y=apply(y,2,as.numeric)
-      sum1<-colMeans(y)
+      sum1<-colMedians(y)
       sum1<-c(genes,sum1)
       
       DeleteGene<-c(DeleteGene,deleteGene)
