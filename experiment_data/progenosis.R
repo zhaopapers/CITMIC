@@ -14,7 +14,7 @@ library(glmnet)
 load("go_cell_inter_10_350.Rdata")
 
 
-go_cell_score_row<-function(a,table,del,c){
+  go_cell_score_row<-function(a,table,del,c){
       score_row<-rep(0,c)
 
       for(j in 1:length(a)){
@@ -33,8 +33,6 @@ go_cell_score_row<-function(a,table,del,c){
       }
       return(score_row)
     }
-
-
     median_inter<-function(matrix_cell_go_inter,matrix_cell_go_jaccard,GEP){
 
       GEPscore<-cbind(rownames(GEP),GEP[,1])
@@ -58,27 +56,21 @@ go_cell_score_row<-function(a,table,del,c){
     }
 
 
-matrix_m_m_score<-function(a){
-  matrix_m_m_score<-t(a)%*%a
-  matrix_m_m_score[is.na(matrix_m_m_score)]<-0
-  return(matrix_m_m_score)
-}
 
 
-random_crosstalk<-function(result_cell,damping=damping){
+  random_crosstalk<-function(result_cell,damping=damping){
 
 
 
     adj.final<-as.matrix(result_cell)
-    graph = graph.adjacency(adj.final,mode=c("undirected"),weighted=weighted,add.rownames=T)
-    temp = page.rank(graph, vids=V(graph), directed=FALSE, damping=damping, weights=NULL)
+    graph = graph_from_adjacency_matrix(adj.final,mode=c("undirected"),weighted=weighted,add.rownames=T)
+    temp = page_rank(graph, vids=V(graph), directed=FALSE, damping=damping, weights=NULL)
     rank = temp$vector
     rank1 = as.matrix(rank)
 
 
     return(rank1)
   }
-
 
 timeRoc<-function(risk,year){
   risk$OS.time<-risk$OS.time/365
@@ -92,18 +84,17 @@ timeRoc<-function(risk,year){
 }
 
 
-factor_sing_multi<-function(cell_ssgsea_survival){
-  genes<-colnames(cell_ssgsea_survival)[4:length(colnames(cell_ssgsea_survival))]
+factor_sing_multi<-function(cell_survival){
+  genes<-colnames(cell_survival)[4:length(colnames(cell_survival))]
   outTab= data.frame()
   for(i in genes){
-    expr = cell_ssgsea_survival[,i]
-    cox = coxph(Surv(OS.time,OS) ~ expr,cell_ssgsea_survival)
+    expr = cell_survival[,i]
+    cox = coxph(Surv(OS.time,OS) ~ expr,cell_survival)
     coxsummary = summary(cox)
     if(coxsummary$coefficients[,"Pr(>|z|)"]<=0.05){
       outTab=rbind(
         outTab,cbind(
           cell=i,
-          
           coef=coxsummary$coefficients[,"coef"],
           HR=coxsummary$coefficients[,"exp(coef)"],
           pvalue=coxsummary$coefficients[,"Pr(>|z|)"]
@@ -112,10 +103,10 @@ factor_sing_multi<-function(cell_ssgsea_survival){
     }
     #print(i)
   }
-  cell_ssgsea_survival<-cell_ssgsea_survival[,c("sample","OS","OS.time",outTab[,1])]
-  rownames(cell_ssgsea_survival)<-cell_ssgsea_survival[,1]
-  cell_ssgsea_survival<-cell_ssgsea_survival[,-1]
-  cox = coxph(Surv(OS.time,OS) ~ .,cell_ssgsea_survival)
+  cell_survival<-cell_survival[,c("sample","OS","OS.time",outTab[,1])]
+  rownames(cell_survival)<-cell_survival[,1]
+  cell_survival<-cell_survival[,-1]
+  cox = coxph(Surv(OS.time,OS) ~ .,cell_survival)
   coxsummary = summary(cox)
   print(coxsummary)
   cel<-rownames(coxsummary$coefficients)[which(coxsummary$coefficients[,"Pr(>|z|)"]<=0.05)]
@@ -131,19 +122,19 @@ factor_sing_multi<-function(cell_ssgsea_survival){
   survival_factor_adjusted<-coxsummary$coefficients[which(coxsummary$coefficients[,5]<=0.05),]
 
   if(length(survival_factor_adjusted)==5){
-    G<-rownames(coxsummary$coefficients)[which(coxsummary$coefficients[,5]<0.05)]
-    G<-gsub("`","",G)
-    G.exp<-as.matrix(cell_ssgsea_survival[,G])
+    singleGene<-rownames(coxsummary$coefficients)[which(coxsummary$coefficients[,5]<0.05)]
+    singleGene<-gsub("`","",singleGene)
+    G.exp<-as.matrix(cell_survival[,singleGene])
     RiskScore<-G.exp*survival_factor_adjusted[1]
   }else{
     rownames(survival_factor_adjusted)<-gsub("`","",rownames(survival_factor_adjusted))
-    G.exp<-as.matrix(cell_ssgsea_survival[,rownames(survival_factor_adjusted)])
+    G.exp<-as.matrix(cell_survival[,rownames(survival_factor_adjusted)])
 
     RiskScore<-G.exp%*%survival_factor_adjusted[,1]
   }
 
 
-  riskresult = cbind(patient = rownames(cell_ssgsea_survival),cell_ssgsea_survival[,1:2],G.exp,RiskScore)
+  riskresult = cbind(patient = rownames(cell_survival),cell_survival[,1:2],G.exp,RiskScore)
   res.cut <- surv_cutpoint(data.frame(riskresult), time = "OS.time", event = "OS",
                            variables = c("RiskScore"))
 
@@ -193,25 +184,20 @@ load("GSE22155_GPL6947_aggregate_20000.Rdata")
 load("GSE22155_GPL6102_aggregate_20000.Rdata")
 library(parallel)
 cl <- makeCluster(8)
-clusterExport(cl,varlist = list("GSE22155_GPL6947_aggregate_20000","go_miRNA_score_row","median_inter","matrix_m_m_score","matrix_cell_go_inter","matrix_cell_go_score"))
+clusterExport(cl,varlist = list("GSE22155_GPL6947_aggregate_20000","go_cell_score_row","median_inter","matrix_cell_go_inter","matrix_cell_go_score"))
 
-result_cell_GSE22155_GPL6947_10_350_20000<-parLapply(cl=cl,
-                                                     X=colnames(GSE22155_GPL6947_aggregate_20000),function(x){
-                                                       Zvalue<-data.frame(cbind(rownames(GSE22155_GPL6947_aggregate_20000),GSE22155_GPL6947_aggregate_20000[,x]))
-                                                       Zvalue <- data.frame(Zvalue[!is.infinite(Zvalue[,2]),])
-                                                       Zvalue <- data.frame(Zvalue[!is.na(Zvalue[,2]),])
-                                                       Zvalue <- data.frame(Zvalue[!is.nan(Zvalue[,2]),])
-                                                       Zvalue[,2]<-as.numeric(Zvalue[,2])
-                                                       Z<-data.frame(Zvalue[,2])
-                                                       rownames(Z)<-Zvalue[,1]
-                                                       median_num_SKCM<-median_inter(matrix_cell_go_inter,matrix_cell_go_score,Z)
-                                                       score_SKCM<-matrix_m_m_score(median_num_SKCM)
-                                                       diag(score_SKCM)<-0
-                                                       
-                                                       return(score_SKCM)
-                                                       
-                                                       
-                                                     })
+
+result_cell_GSE22155_GPL6947_10_350_20000<-parLapply(cl=cl,X=colnames(GSE22155_GPL6947_aggregate_20000),function(x){
+                           Zvalue<-data.frame(cbind(rownames(GSE22155_GPL6947_aggregate_20000),GSE22155_GPL6947_aggregate_20000[,x]))
+                           Zvalue <- data.frame(Zvalue[!is.infinite(Zvalue[,2]),])
+                           Zvalue <- data.frame(Zvalue[!is.na(Zvalue[,2]),])
+                           Zvalue <- data.frame(Zvalue[!is.nan(Zvalue[,2]),])
+                           Zvalue[,2]<-as.numeric(Zvalue[,2])
+                           Z<-data.frame(Zvalue[,2])
+                           rownames(Z)<-Zvalue[,1]
+                           score<-median_inter(matrix_cell_go_inter,matrix_cell_go_jaccard,Z)
+                           return(score)
+                         })
 names(result_cell_GSE22155_GPL6947_10_350_20000)<-colnames(GSE22155_GPL6947_aggregate_20000)
 stopCluster(cl)
 
@@ -219,7 +205,7 @@ stopCluster(cl)
 
 Score_rankwalk_GSE22155_GPL6947_20000<-data.frame(row.names=rownames(result_cell_GSE22155_GPL6947_10_350_20000[[1]]))
 for(i in names(result_cell_GSE22155_GPL6947_10_350_20000)){
-  score<-final_score(result_cell_GSE22155_GPL6947_10_350_20000[[i]])
+  score<-random_crosstalk(result_cell_GSE22155_GPL6947_10_350_20000[[i]])
   Score_rankwalk_GSE22155_GPL6947_20000<-cbind(
     Score_rankwalk_GSE22155_GPL6947_20000,
     score[rownames(Score_rankwalk_GSE22155_GPL6947_20000),])
@@ -232,34 +218,27 @@ library(parallel)
 cl <- makeCluster(8)
 clusterExport(cl,varlist = list("GSE22155_GPL6102_aggregate_20000","go_miRNA_score_row","median_inter","matrix_m_m_score","matrix_cell_go_inter","matrix_cell_go_score"))
 
-result_cell_GSE22155_GPL6102_10_350_20000<-parLapply(cl=cl,
-                                                     X=colnames(GSE22155_GPL6102_aggregate_20000),function(x){
-                                                       Zvalue<-data.frame(cbind(rownames(GSE22155_GPL6102_aggregate_20000),GSE22155_GPL6102_aggregate_20000[,x]))
-                                                       Zvalue <- data.frame(Zvalue[!is.infinite(Zvalue[,2]),])
-                                                       Zvalue <- data.frame(Zvalue[!is.na(Zvalue[,2]),])
-                                                       Zvalue <- data.frame(Zvalue[!is.nan(Zvalue[,2]),])
-                                                       Zvalue[,2]<-as.numeric(Zvalue[,2])
-                                                       Z<-data.frame(Zvalue[,2])
-                                                       rownames(Z)<-Zvalue[,1]
-                                                       median_num_SKCM<-median_inter(matrix_cell_go_inter,matrix_cell_go_score,Z)
-                                                       score_SKCM<-matrix_m_m_score(median_num_SKCM)
-                                                       diag(score_SKCM)<-0
-                                                       return(score_SKCM)
-                                                       
-                                                       
-                                                     })
+result_cell_GSE22155_GPL6102_10_350_20000<-parLapply(cl=cl,X=colnames(GSE22155_GPL6102_aggregate_20000),function(x){
+                           Zvalue<-data.frame(cbind(rownames(GSE22155_GPL6102_aggregate_20000),GSE22155_GPL6102_aggregate_20000[,x]))
+                           Zvalue <- data.frame(Zvalue[!is.infinite(Zvalue[,2]),])
+                           Zvalue <- data.frame(Zvalue[!is.na(Zvalue[,2]),])
+                           Zvalue <- data.frame(Zvalue[!is.nan(Zvalue[,2]),])
+                           Zvalue[,2]<-as.numeric(Zvalue[,2])
+                           Z<-data.frame(Zvalue[,2])
+                           rownames(Z)<-Zvalue[,1]
+                           score<-median_inter(matrix_cell_go_inter,matrix_cell_go_jaccard,Z)
+                           return(score)
+                         })
 names(result_cell_GSE22155_GPL6102_10_350_20000)<-colnames(GSE22155_GPL6102_aggregate_20000)
 stopCluster(cl)
 Score_rankwalk_GSE22155_GPL6102_20000<-data.frame(row.names=rownames(result_cell_GSE22155_GPL6102_10_350_20000[[1]]))
 for(i in names(result_cell_GSE22155_GPL6102_10_350_20000)){
-  score<-final_score(result_cell_GSE22155_GPL6102_10_350_20000[[i]])
+  score<-random_crosstalk(result_cell_GSE22155_GPL6102_10_350_20000[[i]])
   
   Score_rankwalk_GSE22155_GPL6102_20000<-cbind(
     Score_rankwalk_GSE22155_GPL6102_20000,
     score[rownames(Score_rankwalk_GSE22155_GPL6102_20000),])
-  #score<-cbind(rownames(score),score[,1])
-  #colnames(score)<-c("cell",names(result_RNA_cell_TCGA_SKCM_fpkm)[i])
-  #Score_rankwalk_TCGA_SKCM_fpkm<-merge(Score_rankwalk_TCGA_SKCM_fpkm,score,by="cell")
+
   print(i)
 }
 colnames(Score_rankwalk_GSE22155_GPL6102_20000)<-names(result_cell_GSE22155_GPL6102_10_350_20000)
