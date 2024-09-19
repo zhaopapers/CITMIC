@@ -25,6 +25,21 @@ pheatmap(cell_inter,
          breaks = seq(-1, 1, length.out = 101))  
 
 #View the top 500 bp most relevant to the subgroup
+GSE86363_myeloid<-c("pDCs","Monocytes","Eosinophils","DCs",
+"Neutrophils","Mast cell","M1 Macrophages","M2 Macrophages",
+"Macrophages","iDCs","mDCs")
+cell_myeloid_go<-matrix_cell_go_score[,GSE86363_myeloid]
+sum_r<-data.frame(apply(cell_myeloid_go,1,sum))
+sum_r<-cbind(rownames(sum_r),sum_r[,1])
+sum_r<-data.frame(sum_r)
+sum_r[,2]<-as.numeric(sum_r[,2])
+sum_r<-sum_r[order(sum_r[,2],decreasing = T),]
+edge_list_myeloid<-melt(cell_1_go[sum_r[1:52,1],])
+edge_list_myeloid<-edge_list_myeloid[order(edge_list_myeloid[,3],decreasing = T),]
+edge_list_myeloid<-edge_list_myeloid[1:500,]
+write.csv(edge_list_myeloid,"edge_list_myeloid.csv")
+
+
 cell_1<-c("Th1 cells","CTLs","Cytotoxic cells","Activated CD8+ T cells",
           "nTreg","DCs","Tregs","Tr1","T cells","iTregs","Immature  B cells",
           "Activated CD4+ T cells","Th17 cells","Tfh","MDSCs")
