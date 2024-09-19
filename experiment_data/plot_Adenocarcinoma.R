@@ -1,7 +1,7 @@
 #Dumbbell diagram
-pancancer_AUC<-read.csv("D:/Users/89800/Desktop/数据整理/D.csv")
+pancancer_AUC<-read.csv("AUC_Adenocarcinoma.csv")
 pancancer_AUC<-cbind(pancancer_AUC[which(pancancer_AUC[,4]=="all"),1:3],pancancer_AUC[which(pancancer_AUC[,4]!="all"),2])
-colnames(pancancer_AUC)[4]<-"iii_auc"
+colnames(pancancer_AUC)[4]<-"high_auc"
 library(ggplot2)
 library(ggalt)
 library(ggprism)
@@ -118,7 +118,7 @@ GDCprepare(query, save=T, save.filename="TCGA-BRCA_SNP.Rdata")
  
 library(CITMIC)
 library(parallel)
-load("BRCA_exp.Rdata")
+load("BRCA_exp.Rdata")#BRCA exp Standardized methodology consistent with SKCM
 lnScore_BRCA<-CITMIC(BRCA_exp,cl.core=8)
 survival<-read.delim("BRCA_survival.txt",header=T,sep = "\t")
 survival<-survival[,c("sample","OS","OS.time")]
@@ -148,7 +148,7 @@ single_cox_cell_interact_late<-factor_sing_multi(cell_interact_survival_unI_II)
 single_cox_cell_interact_late<-single_cox_cell_interact_late[,c(1,5)]
 BRCA.BQ<-single_cox_cell_interact_late
 library(maftools)
-load("D:/Users/89800/Desktop/CellRankScore/TCGA-BRCA_SNP.Rdata")
+load("TCGA-BRCA_SNP.Rdata")
 maf.BRCA<-data
 maf<-read.maf(maf.BRCA)
 data<-maf@data
@@ -159,92 +159,48 @@ PIK3CA_mut_sam<-gsub("-",".",PIK3CA_mut_sam)
 BRCA.BQ[which(rownames(BRCA.BQ)%in%PIK3CA_mut_sam),6]<-"mutant"
 BRCA.BQ[-which(rownames(BRCA.BQ)%in%PIK3CA_mut_sam),6]<-"wt"
 
-CTNNB1_mut<-data.frame(data[which(data[,2]=="CTNNB1"),])
-
-CTNNB1_mut_sam<-substr(CTNNB1_mut[,17],1,16)
-CTNNB1_mut_sam<-gsub("-",".",CTNNB1_mut_sam)
-
-LIHC.BQ[which(rownames(LIHC.BQ)%in%CTNNB1_mut_sam),4]<-"mutant"
-LIHC.BQ[-which(rownames(LIHC.BQ)%in%CTNNB1_mut_sam),4]<-"wt"
 
 
-AXIN1_mut<-data.frame(data[which(data[,2]=="AXIN1"),])
 
-AXIN1_mut_sam<-substr(AXIN1_mut[,17],1,16)
-AXIN1_mut_sam<-gsub("-",".",AXIN1_mut_sam)
-
-LIHC.BQ[which(rownames(LIHC.BQ)%in%AXIN1_mut_sam),5]<-"mutant"
-LIHC.BQ[-which(rownames(LIHC.BQ)%in%AXIN1_mut_sam),5]<-"wt"
-
+#STAD
+maf.BRCA<-data
+maf<-read.maf(maf.BRCA)
+data<-maf@data
 PIK3CA_mut<-data.frame(data[which(data[,2]=="PIK3CA"),])
-
 PIK3CA_mut_sam<-substr(PIK3CA_mut[,17],1,16)
 PIK3CA_mut_sam<-gsub("-",".",PIK3CA_mut_sam)
 
-STAD.BQ2[which(rownames(STAD.BQ2)%in%PIK3CA_mut_sam),10]<-"mutant"
-STAD.BQ2[-which(rownames(STAD.BQ2)%in%PIK3CA_mut_sam),10]<-"wt"
-
+STAD.BQ[which(rownames(STAD.BQ2)%in%PIK3CA_mut_sam),10]<-"mutant"
+STAD.BQ[-which(rownames(STAD.BQ2)%in%PIK3CA_mut_sam),10]<-"wt"
 
 TP53_mut<-data.frame(data[which(data[,2]=="TP53"),])
-
 TP53_mut_sam<-substr(TP53_mut[,17],1,16)
 TP53_mut_sam<-gsub("-",".",TP53_mut_sam)
 
-STAD.BQ2[which(rownames(STAD.BQ2)%in%TP53_mut_sam),11]<-"mutant"
-STAD.BQ2[-which(rownames(STAD.BQ2)%in%TP53_mut_sam),11]<-"wt"
+STAD.BQ[which(rownames(STAD.BQ2)%in%TP53_mut_sam),11]<-"mutant"
+STAD.BQ[-which(rownames(STAD.BQ2)%in%TP53_mut_sam),11]<-"wt"
 
 
 
-colnames(READ.TB)[3]<-"KRAS"
-colnames(READ.TB)[4]<-"TP53"
-colnames(READ.TB)[5]<-"BRAF"
-colnames(READ.TB)[6]<-"PIK3CA"
-colnames(READ.TB)[7]<-"EGFR"
-colnames(lihc_ri)[16]<-"CDKN2A"
-plotmafSummary(maf=maf,rmOutlier = TRUE,addStat = 'median',dashboard = TRUE)
-
-load("pancancer/exp/READ.exp.Rdata")
 library(estimate)
-
-
-
-
 single_cox_cell_interact_late[,1]
-write.table(exp_READ_fpkm_tumor_aggregate_log2_20000[,single_cox_cell_interact_late[,1]],file="READ_exp.txt",quote=F,sep="\t")
+write.table(exp_BRCA_fpkm_tumor_aggregate_log2_20000,file="READ_exp.txt",quote=F,sep="\t")
 filterCommonGenes(input.f="D:/Users/89800/Desktop/CellRankScore/READ_exp.txt", output.f="READ_exp.gct", id="GeneSymbol")
 estimateScore("READ_exp.gct", "READ_exp_estimate_score.gct", platform="illumina")
-STAD_score<-read.delim("D:/Users/89800/Desktop/CellRankScore/READ_exp_estimate_score.gct",fill=TRUE)
-STAD_score<-t(STAD_score[2:5,])
-colnames(STAD_score)<-STAD_score[1,]
-STAD_score<-STAD_score[-1,]
-rownames(STAD_score)<-STAD_score[,1]
-STAD_score<-STAD_score[,-1]
-STAD_score<-STAD_score[-1,]
-STAD_score<-data.frame(STAD_score)
-STAD_score1<-apply(STAD_score,2,as.numeric)
-rownames(STAD_score1)<-rownames(STAD_score)
-STAD.BQ1<-cbind(STAD.BQ,STAD_score1[rownames(STAD.BQ),])
-STAD_score1<-data.frame(STAD_score1)
-rownames(STAD_score1)<-substr(rownames(STAD_score1),0,12)
-rownames(phe)<-phe[,1]
-phe<-phe[,-1]
-stad_ri<-single_cox_cell_interact_late[,c(1,9)]
+BRCA_score<-read.delim("D:/Users/89800/Desktop/CellRankScore/BRCA_exp_estimate_score.gct",fill=TRUE)
 
-comm<-intersect(rownames(phe),rownames(STAD_score1))
-STAD_score1<-cbind(STAD_score1,phe[rownames(STAD_score1),])
-#干性得分 
+#stem score 
 library(xlsx)
-TCGA_score_Stemness<-read.xlsx("D://a研究生报告数据//a研究生报告数据//赵希龙-20231014干性得分//stemness_score//TCGA_score.xlsx",sheetIndex  =1)
+TCGA_score_Stemness<-read.xlsx("/TCGA_score.xlsx",sheetIndex  =1)
 TCGA_score_Stemness<-TCGA_score_Stemness[which(TCGA_score_Stemness[,2]=="READ"),c(1,4)]
 TCGA_score_Stemness[,1]<-substr(TCGA_score_Stemness[,1],1,16)
 TCGA_score_Stemness[,1]<-gsub("-",".",TCGA_score_Stemness[,1])
 rownames(TCGA_score_Stemness)<-TCGA_score_Stemness[,1]
 rownames(TCGA_score_Stemness)<-substr(rownames(TCGA_score_Stemness),0,12)
 
-STAD.BQ2<-cbind(STAD.BQ1,stemness_Score=TCGA_score_Stemness[rownames(STAD.BQ1),2])
-stem_cell<-c("Chondrocytes","CLP","CMP","Erythrocytes","GMP","HSCs","MDSCs","MEP","MPP","MSCs","Platelets")
+STAD.BQ<-cbind(STAD.BQ,stemness_Score=TCGA_score_Stemness[rownames(STAD.BQ),2])
 sample<-intersect(TCGA_score_Stemness[,1],single_cox_cell_interact_late[,1])
-stem_cell_CTscore<-network_cell_score[stem_cell,sample]
+
 TCGA_score_Stemness1<-TCGA_score_Stemness[which(TCGA_score_Stemness[,1]%in%sample),]
 TCGA_score_Stemness1<-TCGA_score_Stemness1[order(TCGA_score_Stemness1[,2],decreasing = T),]
 
@@ -257,9 +213,8 @@ breaks <- seq(min_value, max_value, length.out = 101)
 pheatmap(stem_cell_CTscore[,rownames(TCGA_score_Stemness2)],scale="row",breaks=breaks,show_colnames = F,show_rownames = T,cluster_cols = T,annotation_col=TCGA_score_Stemness2)
 
 
-BRCA.BQ2<-cbind(BRCA.BQ1,TCGA_score_Stemness1[rownames(BRCA.BQ1),2])
-colnames(BRCA.BQ2)[14]<-"Stemness Score"
-subtype1<-rownames(information)[which(information[,1]=="1")]
+BRCA.BQ<-cbind(BRCA.BQ,TCGA_score_Stemness[rownames(BRCA.BQ),2])
+colnames(BRCA.BQ)[14]<-"Stemness Score"
 
 
 library(RColorBrewer)
@@ -289,12 +244,12 @@ colors <- list(
   Molecular.Subtype =c("EBV"="#4ea397", "MSI"="#7bd9a5","CIN"="#d0648a","GS"="#f58db2","white"),
  n = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100)
 )
-STAD.BQ3<-STAD.BQ3[,-1]
+STAD.BQ<-STAD.BQ[,-1]
 rownames(survival)<-survival[,1]
 survival<-survival[,-1]
 BRCA.BQ<-cbind(survival[rownames(BRCA.BQ),3],BRCA.BQ)
 colnames(BRCA.BQ)[1]<-"pathologic_stage"
-p1<-pheatmap(t(PP),cluster_rows = F,cluster_cols = F,annotation_col =STAD.BQ3,
+p1<-pheatmap(t(PP),cluster_rows = F,cluster_cols = F,annotation_col =STAD.BQ,
          annotation_colors = colors,show_colnames = F,show_rownames = F )
 pp<-data.frame(single_cox_cell_interact_late$RiskScore)
 rownames(pp)<-single_cox_cell_interact_late[,1]
@@ -310,7 +265,7 @@ STAD_score1<-data.frame(STAD_score1)
 
 #柱状图
 BRCA.BQ
-a<-t(exp_READ_fpkm_tumor_aggregate_log2_20000["PDCD1",rownames(READ.TB)])
+a<-t(exp_BRCA_fpkm_tumor_aggregate_log2_20000["TP53",rownames(READ.TB)])
 comm<-intersect(rownames(READ.TB),rownames(TCGA_score_Stemness))
 result<-data.frame(cbind(RiskScore= READ.TB[comm,2],Score=TCGA_score_Stemness[comm,2]))
 result<-data.frame(cbind(RiskScore= READ.TB[,2],Score=a))
