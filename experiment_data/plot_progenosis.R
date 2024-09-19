@@ -1,19 +1,12 @@
 #single cox bubble
-factor_s<-function(cell_ssgsea_survival){
-  cell_ssgsea<-cell_ssgsea_survival[4:length(colnames(cell_ssgsea_survival))]
-  gene<-apply(cell_ssgsea,2,function(x){
-    cv<-sd(x)/mean(x)
-    
-  })
-  genes<-names(gene)
-  
+factor_s<-function(cell_survival){
+  cell<-cell_survival[4:length(colnames(cell_survival))]
+  cells<-colnames(cell)
   outTab= data.frame()
-  
-  for(i in genes){
-    expr = cell_ssgsea_survival[,i]
-    cox = coxph(Surv(OS.time,OS) ~ expr,cell_ssgsea_survival)
+  for(i in cells){
+    expr = cell_survival[,i]
+    cox = coxph(Surv(OS.time,OS) ~ expr,cell_survival)
     coxsummary = summary(cox)
-    if(coxsummary$coefficients[,"Pr(>|z|)"]<=1){
       outTab=rbind(
         outTab,cbind(
           cell=i,
@@ -22,22 +15,16 @@ factor_s<-function(cell_ssgsea_survival){
           pvalue=coxsummary$coefficients[,"Pr(>|z|)"]
         )
       )
-    }
     print(i)
   }
-  
-  G.exp<-as.matrix(cell_ssgsea_survival[,outTab[,1]])
+  G.exp<-as.matrix(cell_survival[,outTab[,1]])
   print(outTab)
   coef<-as.numeric(outTab[,2])
   RiskScore<-G.exp%*%coef
-  
-  
-  riskresult = cbind(patient = cell_ssgsea_survival[,1],cell_ssgsea_survival[,2:3],G.exp,RiskScore)
+  riskresult = cbind(patient = cell_survival[,1],cell_survival[,2:3],G.exp,RiskScore)
   res.cut <- surv_cutpoint(data.frame(riskresult), time = "OS.time", event = "OS",
                            variables = c("RiskScore"))
-  
   riskresult$group<-ifelse(riskresult$RiskScore>=res.cut[["cutpoint"]][["cutpoint"]],"high","low")
-  
   return(outTab)
   
 }
@@ -124,7 +111,7 @@ bubble[which(bubble$pvalue<0.001),2]<-3
 bubble[which(bubble$coef>0),1]<-1
 bubble[which(bubble$coef<0),1]<-0
 bubble<-bubble[,-3]
-bubble<-cbind(bubble,"CITMIC")
+bubble<-cbind(bubble,"ssGSEA")
 bubble<-cbind(rownames(bubble),bubble)
 
 bubble<-cbind(bubble,cell_type[rownames(bubble),])
@@ -133,9 +120,9 @@ colnames(bubble)<-c("cell","HR","P","method","type")
 write.csv(bubble,"bubble_CITMIC.csv")
 
 #Integration different methods for the same cell type
-Dotpot<-read.csv("cell_interact_Lymphoids_cell.csv")
-Dotpot[,3]<-as.factor(Dotpot[,3])
-Dotpot[,2]<-as.factor(Dotpot[,2])
+dotpot<-read.csv("cell_interact_Lymphoids_cell.csv")
+dotpot[,3]<-as.factor(dotpot[,3])
+dotpot[,2]<-as.factor(dotpot[,2])
 
 
 p_Lymphoids_cell<-ggplot(Dotpot, aes(cell,method))  + scale_fill_gradient2(low = "#FFFFFF",mid = "#FFFFFF",high = "#FFFFFF",na.value ="#FFFFFF", midpoint = 6 ) +
@@ -153,10 +140,8 @@ p_Lymphoids_cell/(p_Myeloids_cell+p_Stem_cell+p_Stromal_cell+ plot_layout(widths
 
 
 
-
-single_cox_cell_interact_late[,3]<-single_cox_cell_interact_late[,3]/30
-
-riskresult<-cell_interact_survival1
+#survival curve
+riskresult<-cell_interact_survival
 res.cut <- surv_cutpoint(data.frame(riskresult), time = "OS.time", event = "OS",
                          variables = c("RiskScore"))
 riskresult$OS.time<-riskresult$OS.time/30
@@ -171,6 +156,7 @@ ggsurvplot(kmfit, data=riskresult,
            
 )
 
+#scatter graph
 PlotScatter(riskresult,cutoff.point=res.cut[["cutpoint"]][["cutpoint"]])
 colnames(single_cox_cell_interact_late)[2:3]<-c("status","time")
 PlotScatter<-function(single_cox_cell_interact_late,
@@ -305,7 +291,7 @@ PlotScatter<-function(single_cox_cell_interact_late,
   
 }
 
-#auc
+#time AUC
 
 plotAUCcurve(tROC,conf.int=F,col="blue")
 plot(tROC,time=1,col='orange')
@@ -314,7 +300,7 @@ plot(tROC,time=5,col='green',add=T)
 plot(tROC,time=7,col='yellow',add=T)
 plot(tROC,time=9,col='blue',add=T)
 legend(0.6,0.3,c(paste("AUC of 1 Year =",round(tROC$AUC,3)[1]),
-                 paste("AUC of 3 Year =",round(tROC$AUC,3)[3]),#
+                 paste("AUC of 3 Year =",round(tROC$AUC,3)[3]),
                  paste("AUC of 5 Year =",round(tROC$AUC,3)[5]),
                  paste("AUC of 7 Year =",round(tROC$AUC,3)[7]),
                  paste("AUC of 9 Year =",round(tROC$AUC,3)[9])),
@@ -324,6 +310,7 @@ legend(0.6,0.3,c(paste("AUC of 1 Year =",round(tROC$AUC,3)[1]),
        bty = "n",
        seg.len=1,cex=0.9)# 
 
+#single cell survival curve
 cells<-c("Platelets","Erythrocytes","MSCs","Endothelial cells","Fibroblasts","LECs","Muscle cell",
   "mv Endothelial cells","Preadipocytes","Smooth muscle cell")
 result<-list()
@@ -343,8 +330,8 @@ splots <- lapply(names(result), function(g){
   i = which(names(result) == g)
   test<-as.data.frame(result[i])
   colnames(test)<-c("OS","OS.time","score","group")
-  sfit1<-survfit(Surv(OS.time,OS)~group,data=test)
-  p = survminer::ggsurvplot(sfit1, pval = TRUE, palette = c("red","darkblue"),
+  sfit<-survfit(Surv(OS.time,OS)~group,data=test)
+  p = survminer::ggsurvplot(sfit, pval = TRUE, palette = c("red","darkblue"),
                             data = test, legend = c(0.8, 0.8), title = names(result)[[i]])
   p2 = p$plot + theme(plot.title = element_text(hjust = 0.5))
   return(p2)
