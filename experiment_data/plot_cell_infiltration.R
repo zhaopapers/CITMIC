@@ -88,7 +88,7 @@ corrplot(as.matrix(mcor),tl.col = 'black',
          rect.lwd = 2)
 
 #bar graph
-colnames(compare_method_prediction)<-c("cell","patient","predict","observed"]
+colnames(compare_method_prediction)<-c("cell","patient","predict","observed")
 compare_method_prediction_single<-compare_method_prediction[which(compare_method_prediction$cell=="Activated CD4+ T cells"),]
 ggplot(compare_method_prediction_single, aes(x = predict, y = observed))+geom_point(size = 6, color = "black")+
   geom_smooth(method = "lm",aes(x =predict , y = observed),
