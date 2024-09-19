@@ -1,6 +1,6 @@
 #ID transfer function
-ID_Tran_Gene_GEO<-function(a,b){
-  probe_gene<-cbind(b[,1],b[,2])
+ID_Tran_Gene_GEO<-function(GSE,GPL){
+  probe_gene<-cbind(GPL[,1],GPL[,2])
   probe_location<-c()
   Probes<-c()
   for(i in 1:dim(probe_gene)[1]){
@@ -17,31 +17,30 @@ ID_Tran_Gene_GEO<-function(a,b){
   colnames(Probe_gene)<-c("ID","Symbol")
   Probe_gene<-data.frame(Probe_gene)
   colnames(a)[1]<-"ID"
-  data_geo_exp<-merge(Probe_gene,a,by.x="ID",by.y="ID")
+  data_geo_exp<-merge(Probe_gene,GSE,by.x="ID",by.y="ID")
   
-  sy<-unique(data_geo_exp[,2])
+  index<-unique(data_geo_exp[,2])
   DeleteGene<-c()
-  data_MiRNA_gene_exp1<-c()
-  for(i in 1:length(sy)){
-    matrix<-data_geo_exp[which(data_geo_exp[,2]==sy[i]),]
+  data_gene_exp<-c()
+  for(i in 1:length(index)){
+    matrix<-data_geo_exp[which(data_geo_exp[,2]==index[i]),]
     if(dim(matrix)[1]>=2){
-      
-      deleteGene<-which(data_geo_exp[,2]==sy[i])
+      deleteGene<-which(data_geo_exp[,2]==index[i])
       genes<-matrix[1,2]
       y= matrix[,3:dim(data_geo_exp)[2]]
       y=apply(y,2,as.numeric)
-      sum1<-colMedians(y)
-      sum1<-c(genes,sum1)
+      sum<-colMedians(y)
+      sum<-c(genes,sum)
       
       DeleteGene<-c(DeleteGene,deleteGene)
-      data_MiRNA_gene_exp1<-rbind(data_MiRNA_gene_exp1,sum1)
+      data_gene_exp<-rbind(data_gene_exp,sum)
     }
     print(i)
   }
   data_geo_exp<-data_geo_exp[-DeleteGene,]
   colnames(data_geo_exp)[2]<-c("gene")
-  colnames(data_MiRNA_gene_exp1)[1]<-c("gene")
-  data_geo_exp<-rbind(data_geo_exp[,2:dim(data_geo_exp)[2]],data_MiRNA_gene_exp1)
+  colnames(data_gene_exp)[1]<-c("gene")
+  data_geo_exp<-rbind(data_geo_exp[,2:dim(data_geo_exp)[2]],data_gene_exp)
   rownames(data_geo_exp)<-data_geo_exp[,1]
   data_geo_exp<-data_geo_exp[,-1]
   
