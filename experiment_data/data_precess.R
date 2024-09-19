@@ -106,7 +106,6 @@ GSE22155_GPL6947<-read.delim("vaildation/GSE22155/GSE22155-GPL6947_series_matrix
 GPL6102<-na.omit(read.csv("vaildation/GSE22155/gpl6102.csv"))
 GPL6947<-na.omit(read.csv("vaildation/GSE22155/GPL6947.csv"))
 
-GSE22155_survival<-read.csv("vaildation/GSE22155/GSE22155_survival.csv")
 
 GPL6102<-GPL6102[which(GPL6102[,2]!=""),]
 GPL6947<-GPL6947[which(GPL6947[,2]!=""),]
