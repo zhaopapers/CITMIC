@@ -104,17 +104,7 @@ query<-GDCquery(
 GDCdownload(query)
 GDCprepare(query, save=T, save.filename="TCGA-BRCA_SNP.Rdata")
 
-library(TCGAbiolinks)
-query<-GDCquery(
-  project = "TCGA-BRCA",
-  data.category = "Simple Nucleotide Variation",
-  data.type = "Masked Somatic Mutation",
-  access="open"
-  
-)
 
-GDCdownload(query)
-GDCprepare(query, save=T, save.filename="TCGA-BRCA_SNP.Rdata")
  
 library(CITMIC)
 library(parallel)
@@ -126,8 +116,8 @@ survival<-survival[which(survival$OS.time!=""),]
 survival$sample<-paste0(survival$sample,"A")
 survival$sample<-gsub("-",".",survival$sample)
 
-stage<-read.delim("D:/citmic/TCGA.BRCA.sampleMap_BRCA_clinicalMatrix",header=T)
-stage_all<-read.delim("D:/citmic/TCGA.BRCA.subtype.sampleMap_BRCA_clinicalMatrix",header=T)
+stage<-read.delim("TCGA.BRCA.sampleMap_BRCA_clinicalMatrix",header=T)
+stage_all<-read.delim("TCGA.BRCA.subtype.sampleMap_BRCA_clinicalMatrix",header=T)
 stage<-stage[,c("sampleID","pathologic_stage")]
 stage<-stage[which(stage$pathologic_stage!=""),]
 stage$sampleID<-paste0(stage$sampleID,"A")
@@ -438,7 +428,7 @@ pheatmap(t(CTTMEScore),cluster_rows = F,cluster_cols = F,annotation_col =annotat
          annotation_colors = colors,show_colnames = F,show_rownames = F)
 
 
-
+#cor plot
 library(ggpubr)
 ggscatter(STAD.BQ, x = "CTTMEScore", y = "ImmuneScore", 
           color = "black",fill = "lightgray",
@@ -451,7 +441,7 @@ ggscatter(STAD.BQ, x = "CTTMEScore", y = "ImmuneScore",
           cor.coef.size = 8)
 
 
-
+#box plot
 library(ggstatsplot)
 ggbetweenstats(data=STAD.BQ,ARID1A,CTTMEScore)
 ggbetweenstats(data=STAD.BQ,Molecular.Subtype,CTTMEScore)
