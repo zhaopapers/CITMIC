@@ -19,11 +19,11 @@ library(parallel)
 
 ## Introduce
 
-This vignette illustrates how to easily use the **CITMIC package**. Here, we present a network-based computational approach, **CTMIC**, estimate cell infiltration by integrating gene transcriptomic data and individualized cell interaction network. 
+This vignette illustrates how to easily use the **CITMIC package**. Here, we present a network-based computational approach, **CTMIC**, estimate cell infiltration by integrating gene transcriptomic data and individualized cell crosstalk network. 
 
 This network-based method major parts:
 
-- - Constructing network and performing randomization. In our method, Here we collected a total of 86 cell types and 4171 GO-BPs. Among them, the gene characterization sets for various cell types came from 12 sources, including published cell signature sets (Bindea et al. [1], Charoentong et al. [2], Danaher et al. [3], Davoli et al. [4], He et al. [5], Rooney et al. [6], Tirosh et al. [7]) and the TME cell estimation methods (MCPcounter [8], EPIC [9], ImmuCellAI [10], TIDE [11] and xCell [12]). The molecular function gene sets were downloaded from C5 Gene sets derived from the GO biological process ontology in the Molecular Signatures Database (MSigDB). We constructed a Cell-GO bipartite network for each sample. We defined an edge between a Cell and a GO term if they have at least a common gene, and give the weight of this edge that is calculated by the Jaccard index and Gene Expression Profile(GEP). Next, we proposed to construct a Cell-Cell interaction network for each sample. The information from the Cell-GO bipartite graph was used to evaluate the extent of interaction between two Cells as the edge's weight. We consider that the extent of interaction between two Cells will be stronger when there are more GO terms they target in common and the more related they are to these GO terms. Then, we used the eigenvector centrality measure to calculate how central each Cell is in this individualized Cell-Cell interaction network. Finally, cell infiltration in the patient dataset was obtained by normalizing the centrality scores of the cells.
+- - Constructing network and performing randomization. In our method, Here we collected a total of 86 cell types and 4171 GO-BPs. Among them, the gene characterization sets for various cell types came from 12 sources, including published cell signature sets (Bindea et al. [1], Charoentong et al. [2], Danaher et al. [3], Davoli et al. [4], He et al. [5], Rooney et al. [6], Tirosh et al. [7]) and the TME cell estimation methods (MCPcounter [8], EPIC [9], ImmuCellAI [10], TIDE [11] and xCell [12]). The molecular function gene sets were downloaded from C5 Gene sets derived from the GO biological process ontology in the Molecular Signatures Database (MSigDB). We constructed a Cell-GO bipartite network for each sample. We defined an edge between a Cell and a GO term if they have at least a common gene, and give the weight of this edge that is calculated by the Jaccard index and Gene Expression Profile(GEP). Next, we proposed to construct a Cell crosstalk network for each sample. The information from the Cell-GO bipartite network was used to evaluate the extent of interaction between two Cells as the edge's weight. We consider that the extent of interaction between two Cells will be stronger when there are more GO terms they target in common and the more related they are to these GO terms. Then, we used the eigenvector centrality measure to calculate how central each Cell is in this individualized Cell crosstalk network. Finally, cell infiltration in the patient dataset was obtained by normalizing the centrality scores of the cells.
 
     This package provides the `GetData_CITMIC` function to return example data set and environment variables, such as the gene expression matrix and so on.
     
@@ -31,17 +31,20 @@ This network-based method major parts:
 
 ##Example  calculate cell infiltration.
 
-The function `CITMIC` is used to calculate the Cell infiltration(lnScore). This function requires users to input the gene expression matrix,the *weighted* specifies whether to create a weighted graph for the cell-cell interaction network, the *base* for standardized log base of data, the *damping* is the restart probability of random walk and the *cl.cores* is number of CPU cores applied to this task. We recommend using as input the gene expression matrix normalized by log2(fpkm+1). An example data is stored in the package.
+The function `CITMIC` is used to calculate the Cell infiltration (lnScore). This function requires users to input the gene expression matrix, the *weighted* specifies whether to create a weighted graph for the cell crosstalk network, the *base* for the standardized log base of data, the *damping* is the restart probability of random walk and the *cl.cores* is a number of CPU cores applied to this task. *cell.type* preset the relevant cell type (e.g. if the solid tumor tissue does not contain 'HSC', it is better to remove it when we preset it). We recommend using as input the gene expression matrix normalized by log2(fpkm+1). An example data is stored in the package.
 
 The commands are as follows: 
 
 ```{r,eval=TRUE}
-#Detect the Number of CPU Cores(Select the number of cl.cores to apply to CITMIC based on detectCores())
+#Detect the Number of CPU Cores (Select the number of cl.cores to apply to CITMIC based on detectCores())
+library(parallel)
+library(igraph)
+library(CITMIC)
 detectCores()
 # Obtain the example data
 GEP<-GetData_CITMIC("GEP")
 # Calculate the Cell infiltration(lnScore)
-lnScore<-CITMIC(GEP,weighted = TRUE,base = 10,damping=0.90,cl.cores=1)
+lnScore<-CITMIC(GEP,weighted = TRUE,base = 10,damping=0.90,cl.cores=1,cell.type=NULL)
 head(lnScore)
 ```
 
