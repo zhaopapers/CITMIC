@@ -195,7 +195,7 @@ result_cell_GSE22155_GPL6947_10_350_20000<-parLapply(cl=cl,X=colnames(GSE22155_G
                            Zvalue[,2]<-as.numeric(Zvalue[,2])
                            Z<-data.frame(Zvalue[,2])
                            rownames(Z)<-Zvalue[,1]
-                           score<-median_inter(matrix_cell_go_inter,matrix_cell_go_jaccard,Z)
+                           score<-median_inter(matrix_cell_go_inter,matrix_cell_go_score,Z)
                            return(score)
                          })
 names(result_cell_GSE22155_GPL6947_10_350_20000)<-colnames(GSE22155_GPL6947_aggregate_20000)
@@ -216,7 +216,7 @@ colnames(Score_rankwalk_GSE22155_GPL6947_20000)<-names(result_cell_GSE22155_GPL6
 
 library(parallel)
 cl <- makeCluster(8)
-clusterExport(cl,varlist = list("GSE22155_GPL6102_aggregate_20000","go_miRNA_score_row","median_inter","matrix_m_m_score","matrix_cell_go_inter","matrix_cell_go_score"))
+clusterExport(cl,varlist = list("GSE22155_GPL6102_aggregate_20000","go_cell_score_row","median_inter","matrix_m_m_score","matrix_cell_go_inter","matrix_cell_go_score"))
 
 result_cell_GSE22155_GPL6102_10_350_20000<-parLapply(cl=cl,X=colnames(GSE22155_GPL6102_aggregate_20000),function(x){
                            Zvalue<-data.frame(cbind(rownames(GSE22155_GPL6102_aggregate_20000),GSE22155_GPL6102_aggregate_20000[,x]))
@@ -226,7 +226,7 @@ result_cell_GSE22155_GPL6102_10_350_20000<-parLapply(cl=cl,X=colnames(GSE22155_G
                            Zvalue[,2]<-as.numeric(Zvalue[,2])
                            Z<-data.frame(Zvalue[,2])
                            rownames(Z)<-Zvalue[,1]
-                           score<-median_inter(matrix_cell_go_inter,matrix_cell_go_jaccard,Z)
+                           score<-median_inter(matrix_cell_go_inter,matrix_cell_go_score,Z)
                            return(score)
                          })
 names(result_cell_GSE22155_GPL6102_10_350_20000)<-colnames(GSE22155_GPL6102_aggregate_20000)
