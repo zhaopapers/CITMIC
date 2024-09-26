@@ -20,7 +20,7 @@ library(xCell)
 xcell_out<-xCellAnalysis(GSE52005)
 
 #CIBERSORT
-lm22<-read.delim("D:/Users/89800/Documents/Tencent Files/898003629/FileRecv/LM22.txt",row.names = 1)
+lm22<-read.delim("LM22.txt",row.names = 1)
 cibersort<-my_CIBERSORT(GSE52005,lm22, perm=10, QN=TRUE, cores = 3)
 
 #quanTIseq
