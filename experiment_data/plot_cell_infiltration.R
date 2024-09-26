@@ -1,7 +1,7 @@
 #SDY144 
 
 #CITMIC
-GSE52005<-read.csv("GSE52005_symbol_aggregate_20000.csv",row.names = 1)
+GSE52005<-read.csv("GSE52005.csv",row.names = 1)
 lnscore_GSE52005<-CITMIC(GSE52005)
 
 #observed
