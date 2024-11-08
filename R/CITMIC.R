@@ -126,7 +126,7 @@ CITMIC<-function(GEP,weighted = TRUE,base = 10,damping=0.90,cl.cores=1,cell.type
   if(is.null(cell.type)){
     lnscore<-lnscore
   }else{
-    lnscore[cell.type,]
+    lnscore<-lnscore[cell.type,]
   }
   return(lnscore)
 }
