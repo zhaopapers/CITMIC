@@ -1,7 +1,7 @@
 Package: CITMIC
 Type: Package
 Title: Estimation of Cell Infiltration Based on Cell Crosstalk
-Version: 0.1.1
+Version: 0.1.2
 Maintainer: Junwei Han <hanjunwei1981@163.com>
 Authors@R: c(person(given = "Junwei", family = "Han", email = "hanjunwei1981@163.com", role  = c("aut", "cre", "cph")),
              person(given = "Xilong", family = "Zhao", role  = "aut")
