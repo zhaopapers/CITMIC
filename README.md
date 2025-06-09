@@ -32,4 +32,9 @@ remotes::install_github("zhaopapers/CITMIC")
 Load the package using `library(CITMIC)`. We provide a vignette for the package that can be called using: `vignette("CITMIC")`. 
 Alternatively, you can view the online version on [CRAN](doc/labyrinth_knit.md), The examples I provided would take several minutes to run on a normal desktop computer. Basically that is all you have to know.
 
+## Citation
+Those codes and the CITMIC package are intended for research use only. 
 
+If you use CITMIC or these codes in your publication, please cite the paper: 
+
+X. Zhao, J. Wu, J. Lai, B. Pan, M. Ji, X. Li, Y. He, J. Han, CITMIC: Comprehensive Estimation of Cell Infiltration in Tumor Microenvironment based on Individualized Intercellular Crosstalk. Adv. Sci. 2025, 12, 2408007. https://doi.org/10.1002/advs.202408007
