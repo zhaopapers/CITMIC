@@ -5,7 +5,7 @@
 #'@param base Standardized log base of data for improving data distribution(default: 10).
 #'@param damping Restart the probability of the random-walk algorithm (default: 0.9).
 #'@param cl.cores The number of CPU cores applied to this task(default:1).
-#'@param cell.type Preset the relevant cell type (e.g. if the solid tumour tissue does not contain 'HSC', it is better to remove it when we preset it.)
+#'@param cell.type Preset the relevant cell type (e.g. if the solid tumor tissue does not contain 'HSC', it is better to remove it when we preset it.). When cell.type = NULL, all 86 cell types from the evaluation project are used by default.
 #'@return A data frame containing the cell infiltration score for each sample.
 #' @importFrom igraph graph_from_adjacency_matrix
 #' @importFrom igraph V
@@ -100,7 +100,7 @@ CITMIC<-function(GEP,weighted = TRUE,base = 10,damping=0.90,cl.cores=1,cell.type
 
 
     adj.final<-as.matrix(result_cell)
-    graph = graph_from_adjacency_matrix(adj.final,mode=c("undirected"),weighted=weighted,add.rownames=T)
+    graph = graph_from_adjacency_matrix(adj.final,mode=c("undirected"),weighted=weighted)
     temp = page_rank(graph, vids=V(graph), directed=FALSE, damping=damping, weights=NULL)
     rank = temp$vector
     rank1 = as.matrix(rank)
